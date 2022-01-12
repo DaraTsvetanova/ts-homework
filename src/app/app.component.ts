@@ -1,7 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Unit } from 'src/classes/Unit';
-import { WorldObject } from 'src/classes/WorldObject';
-import { Position, Team, UnitType, WorldObjectModel } from 'src/models/models';
+import { Position, Team, UnitType } from 'src/models/models';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +9,6 @@ import { Position, Team, UnitType, WorldObjectModel } from 'src/models/models';
 })
 export class AppComponent {
   public outputMessages: string[] = [];
-  public worldObjects: WorldObject[] = [];
   public units: Unit[] = [];
   public resources: any[] = [];
   public names: string[] = [];
@@ -33,7 +31,7 @@ export class AppComponent {
         this.createUnit(commands); // create Entity
         break;
       case 'order':
-        this.orderUnit(); // order to go, attack and gather
+        this.orderUnit(commands); // order to go, attack and gather
         break;
       case 'show':
         break;
@@ -45,7 +43,36 @@ export class AppComponent {
   }
 
   //TODO: two cases with createUnit and createResource
-  public orderUnit() {}
+  public orderUnit(commands: string[]) {
+    const unit = this.units.find(
+      (el) => el.name.toUpperCase() === commands[1].toUpperCase()
+    );
+    if (unit) {
+      switch (commands[2]) {
+        case 'attack':
+          // unit.attack();
+          break;
+        case 'gather':
+          // unit.gather();
+          break;
+        case 'go':
+          const objCoords = this.getCoordinatesByString(commands[3]);
+          if (isNaN(Number(objCoords.x)) || isNaN(Number(objCoords.y))) {
+            this.outputMessages.push(`Please enter valid coordinates!`);
+            break;
+          }
+          unit.modifyPosition(objCoords);
+          this.outputMessages.push(
+            `${unit.name} moved to ${objCoords.x},${objCoords.y}`
+          );
+          break;
+        default:
+          break;
+      }
+    } else {
+      this.outputMessages.push(`Unit does not exist!`);
+    }
+  }
 
   public createUnit(commands: string[]) {
     switch (commands[1]) {
@@ -53,7 +80,7 @@ export class AppComponent {
         const name = commands[2];
         const coordinates: Position = this.getCoordinatesByString(commands[3]);
         const team: Team = commands[4].toUpperCase() as Team;
-        const type: UnitType = commands[5] as UnitType;
+        const type: UnitType = commands[5].toUpperCase() as UnitType;
 
         if (this.names.includes(name)) {
           this.outputMessages.push('Unit with this name already exists!');
@@ -75,10 +102,10 @@ export class AppComponent {
         }
 
         const unit = new Unit(coordinates, team, name, type);
-        this.worldObjects.push(unit);
+        this.units.push(unit);
         this.names.push(name);
         this.outputMessages.push(
-          `Created ${UnitType.toString().toLowerCase()} from ${team
+          `Created ${type} from ${team
             .toString()
             .toLowerCase()} team named ${name} at position ${this.getStringByCoordinates(
             coordinates
@@ -96,6 +123,6 @@ export class AppComponent {
   }
 
   private getStringByCoordinates(coordinates: Position): string {
-    return `${coordinates.x}, ${coordinates.y}`;
+    return `${coordinates.x},${coordinates.y}`;
   }
 }
