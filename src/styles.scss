@@ -1,0 +1,13 @@
+/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background-color: #ececec;
+  background:linear-gradient(135deg, #0f55e4, #0a3a9c);
+  color: #fff;
+  /*padding: 0.5em 1em;*/
+  -webkit-font-smoothing: antialiased;
+}

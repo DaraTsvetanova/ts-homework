@@ -1,0 +1,20 @@
+<div class="console-container">
+  <div class="input-console">
+    <input
+      #inputArea
+      autofocus
+      class="console-input"
+      placeholder="Type command..."
+    />
+    <div class="btn-container">
+      <button class="execute-button" role="button" (click)="executeCommand()">
+        RUN
+      </button>
+    </div>
+  </div>
+  <div class="output-console">
+    <div class="output" *ngFor="let message of outputMessages">
+      <div>{{ message }}</div>
+    </div>
+  </div>
+</div>
