@@ -14,6 +14,10 @@ export class AppComponent {
   public units: Unit[] = [];
   public resources: any[] = [];
   public names: string[] = [];
+  public teamResourceCount: { [key: string]: any } = {
+    blue: {},
+    red: {},
+  };
   @ViewChild('inputArea') inputArea: ElementRef;
 
   constructor() {}
@@ -22,15 +26,26 @@ export class AppComponent {
     const commands = this.inputArea.nativeElement.value.split(' ');
 
     console.log(commands);
+
     const command = commands[0];
     switch (command) {
       case 'create':
-        this.createUnit(commands);
+        this.createUnit(commands); // create Entity
+        break;
+      case 'order':
+        this.orderUnit(); // order to go, attack and gather
+        break;
+      case 'show':
+        break;
+      case 'end':
         break;
       default:
         break;
     }
   }
+
+  //TODO: two cases with createUnit and createResource
+  public orderUnit() {}
 
   public createUnit(commands: string[]) {
     switch (commands[1]) {

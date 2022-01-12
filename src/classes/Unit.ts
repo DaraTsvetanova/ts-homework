@@ -56,7 +56,7 @@ export class Unit extends WorldObject implements UnitModel {
       case UnitType.GIANT:
         this._attack = 40;
         this._defense = 20;
-        this._canGather = false;
+        this._canGather = true;
         this.healthPoints = 90;
         this.canMove = true;
         break;
