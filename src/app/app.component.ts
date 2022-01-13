@@ -1,4 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, Team, UnitType } from 'src/models/models';
 
@@ -10,11 +11,19 @@ import { Position, Team, UnitType } from 'src/models/models';
 export class AppComponent {
   public outputMessages: string[] = [];
   public units: Unit[] = [];
-  public resources: any[] = [];
+  public resources: Resource[] = [];
   public names: string[] = [];
   public teamResourceCount: { [key: string]: any } = {
-    blue: {},
-    red: {},
+    blue: {
+      lumber: 0,
+      iron: 0,
+      food: 0,
+    },
+    red: {
+      lumber: 0,
+      iron: 0,
+      food: 0,
+    },
   };
   @ViewChild('inputArea') inputArea: ElementRef;
 
@@ -28,7 +37,7 @@ export class AppComponent {
     const command = commands[0];
     switch (command) {
       case 'create':
-        this.createUnit(commands); // create Entity
+        this.createObject(commands); // create Entity
         break;
       case 'order':
         this.orderUnit(commands); // order to go, attack and gather
@@ -42,7 +51,6 @@ export class AppComponent {
     }
   }
 
-  //TODO: two cases with createUnit and createResource
   public orderUnit(commands: string[]) {
     const unit = this.units.find(
       (el) => el.name.toUpperCase() === commands[1].toUpperCase()
@@ -73,9 +81,10 @@ export class AppComponent {
       this.outputMessages.push(`Unit does not exist!`);
     }
   }
-
-  public createUnit(commands: string[]) {
-    switch (commands[1]) {
+  //TODO: two cases with createObject and createResource
+  public createObject(commands: string[]) {
+    const objectType = commands[1].toLowerCase();
+    switch (objectType) {
       case 'unit':
         const name = commands[2];
         const coordinates: Position = this.getCoordinatesByString(commands[3]);
@@ -112,9 +121,29 @@ export class AppComponent {
           )}`
         );
         break;
+      case 'resource':
+        this.createResource(commands.slice(-3));
+        break;
       default:
         break;
     }
+  }
+
+  private createResource(input: string[]) {
+    const resourceType = input[0].toUpperCase();
+    const creationCoordinates = this.getCoordinatesByString(input[1]);
+    const quantity = Number(input[2]);
+    console.log(resourceType);
+    console.log(creationCoordinates);
+    console.log(quantity);
+
+    //  create resource Lumber 0,1 30
+    //Format: create resource <resource-type> <position> <hp/quantity>
+    //Resources don’t have a unique identifier, but there cannot be two resources at the same coordinates.
+    // 1. Check if the resource type is legit. - if yes continue, if not print `Resource type {InputType} does not exist!`
+    // 2. Check if the resource quantity is legit. If yes continue, if not print `Please provide valid quantity!`
+    // 3. Check if the resource exists in the resourceArr. If yes continue, if not print `There is already a resource at this position, please try a different position.`
+    // 4. Add the resource to the resources[].
   }
 
   private getCoordinatesByString(coordinates: string): Position {
