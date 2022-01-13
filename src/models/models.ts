@@ -17,9 +17,20 @@ export interface UnitModel {
   gather(): string;
 }
 
+export interface RecourceModel {
+  quantity: number;
+  type: ResourceType;
+}
+
 export interface Position {
   x: number;
   y: number;
+}
+
+export enum ResourceType {
+  FOOD = 'FOOD',
+  LUMBER = 'LUMBER',
+  IRON = 'IRON',
 }
 
 export enum Team {

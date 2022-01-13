@@ -26,7 +26,7 @@ export class Unit extends WorldObject implements UnitModel {
 
   constructor(position: Position, team: Team, name: string, type: UnitType) {
     super(position, true, team);
-
+    this._name = name;
     this.setUnitStats(type);
   }
 
