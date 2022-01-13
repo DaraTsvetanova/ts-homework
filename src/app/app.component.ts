@@ -61,7 +61,7 @@ export class AppComponent {
           // unit.attack();
           break;
         case 'gather':
-          // unit.gather();
+          this.gatherResource(unit);
           break;
         case 'go':
           const objCoords = this.getCoordinatesByString(commands[3]);
@@ -154,6 +154,21 @@ export class AppComponent {
         }
       }
     }
+  }
+
+  private gatherResource(unit:Unit) {
+
+
+    /*
+    1. Check if there is a resource on the current position, 
+    if yes continue, if not print "There is nothing to gather"
+    2. todo
+    If there are no resources at the current coordinates: ‘There is nothing to gather’
+    If a non-gatherer unit tries to gather anything OR if a giant 
+    tries to gather anything except lumber: ‘You cannot gather that’
+    When the gather is successful: 
+    ‘Successfully gathered {quantity} {resource}. Team {teamName} now has {X} food, {Y} lumber and {Z} iron.’
+    */
   }
 
   private isPositionClear(
