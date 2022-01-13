@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
-import { Position, Team, UnitType } from 'src/models/models';
+import { Position, ResourceType, Team, UnitType } from 'src/models/models';
 
 @Component({
   selector: 'app-root',
@@ -130,12 +130,17 @@ export class AppComponent {
   }
 
   private createResource(input: string[]) {
-    const resourceType = input[0].toUpperCase();
-    const creationCoordinates = this.getCoordinatesByString(input[1]);
+    const resourceName = input[0].toUpperCase() as ResourceType;
+    const isLegitResource = Object.keys(ResourceType).includes(resourceName);
+    const coordinates = this.getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
-    console.log(resourceType);
-    console.log(creationCoordinates);
-    console.log(quantity);
+
+    if (isLegitResource) {
+      const newResource = new Resource(coordinates, quantity, resourceName);
+      this.resources.push(newResource);
+      const message = `Created ${resourceName} at position ${coordinates.x},${coordinates.y} with ${quantity} health`;
+      this.outputMessages.push(message);
+    }
 
     //  create resource Lumber 0,1 30
     //Format: create resource <resource-type> <position> <hp/quantity>
@@ -143,7 +148,7 @@ export class AppComponent {
     // 1. Check if the resource type is legit. - if yes continue, if not print `Resource type {InputType} does not exist!`
     // 2. Check if the resource quantity is legit. If yes continue, if not print `Please provide valid quantity!`
     // 3. Check if the resource exists in the resourceArr. If yes continue, if not print `There is already a resource at this position, please try a different position.`
-    // 4. Add the resource to the resources[].
+    // 4. Add the resource to the resources[] and print "Created {resourceType} at position {position} with {hp/quantity} health"
   }
 
   private getCoordinatesByString(coordinates: string): Position {
