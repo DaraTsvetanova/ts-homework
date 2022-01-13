@@ -130,25 +130,46 @@ export class AppComponent {
   }
 
   private createResource(input: string[]) {
-    const resourceName = input[0].toUpperCase() as ResourceType;
-    const isLegitResource = Object.keys(ResourceType).includes(resourceName);
+    const resourceName = <ResourceType>input[0].toUpperCase();
+    const isLegitResource = resourceName in ResourceType;
     const coordinates = this.getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
 
-    if (isLegitResource) {
-      const newResource = new Resource(coordinates, quantity, resourceName);
-      this.resources.push(newResource);
-      const message = `Created ${resourceName} at position ${coordinates.x},${coordinates.y} with ${quantity} health`;
+    if (quantity < 1) {
+      const message = `Please provide valid quantity!`;
       this.outputMessages.push(message);
+    } else {
+      if (!this.isPositionClear(this.resources, coordinates)) {
+        const message = `There is already a resource at this position, please try a different position.`;
+        this.outputMessages.push(message);
+      } else {
+        if (!isLegitResource) {
+          const message = `Resource type ${resourceName} does not exist!`;
+          this.outputMessages.push(message);
+        } else {
+          const newResource = new Resource(coordinates, quantity, resourceName);
+          const message = `Created ${resourceName} at position ${coordinates.x},${coordinates.y} with ${quantity} health`;
+          this.resources.push(newResource);
+          this.outputMessages.push(message);
+        }
+      }
     }
+  }
 
-    //  create resource Lumber 0,1 30
-    //Format: create resource <resource-type> <position> <hp/quantity>
-    //Resources don’t have a unique identifier, but there cannot be two resources at the same coordinates.
-    // 1. Check if the resource type is legit. - if yes continue, if not print `Resource type {InputType} does not exist!`
-    // 2. Check if the resource quantity is legit. If yes continue, if not print `Please provide valid quantity!`
-    // 3. Check if the resource exists in the resourceArr. If yes continue, if not print `There is already a resource at this position, please try a different position.`
-    // 4. Add the resource to the resources[] and print "Created {resourceType} at position {position} with {hp/quantity} health"
+  private isPositionClear(
+    resources: Resource[],
+    coordinates: Position
+  ): boolean {
+    if (resources.length > 0) {
+      for (const resource of resources) {
+        const currentPosition = this.getStringByCoordinates(coordinates);
+        const resourcePosition = this.getStringByCoordinates(resource.position);
+        if (currentPosition === resourcePosition) {
+          return !(currentPosition === resourcePosition);
+        }
+      }
+    }
+    return true;
   }
 
   private getCoordinatesByString(coordinates: string): Position {

@@ -64,17 +64,4 @@ export class Unit extends WorldObject implements UnitModel {
         break;
     }
   }
-
-  public gather(): string {
-    //check if unit can gather.
-      if (!this._canGather) {
-        return "You cannot gather that";
-      }
-      // Todo, check if there are resources on this position/location
-      //   If there are no resources, return "There is nothing to gather".
-      //   If resources are available at the current location, gather them. 
-      //   Add the resource to the team resources and display the following message
-      //   Successfully gathered {quantity} {resource}. Team {teamName} now has {X} food, {Y} lumber and {Z} iron.
-      return "placeholder"
-  }
 }

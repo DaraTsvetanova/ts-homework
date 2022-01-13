@@ -14,7 +14,6 @@ export interface UnitModel {
   defense: number;
   canGather: boolean;
   type: UnitType;
-  gather(): string;
 }
 
 export interface RecourceModel {
