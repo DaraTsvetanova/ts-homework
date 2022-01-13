@@ -42,7 +42,7 @@ export class Unit extends WorldObject implements UnitModel {
       case UnitType.GUARD:
         this._attack = 30;
         this._defense = 20;
-        this._canGather = true;
+        this._canGather = false;
         this.healthPoints = 80;
         this.canMove = true;
         break;

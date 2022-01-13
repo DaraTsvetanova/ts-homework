@@ -156,13 +156,40 @@ export class AppComponent {
     }
   }
 
-  private gatherResource(unit:Unit) {
+  private gatherResource(unit: Unit) {
+    const isThereResource = !this.isPositionClear(
+      this.resources,
+      unit.position
+    );
 
+    if (unit.canGather) {
+      if (isThereResource) {
+        const resource = this.resources.find(
+          (res) =>
+            res.position.x === unit.position.x &&
+            res.position.y === unit.position.y
+        );
+        const resourceInfo = resource?.getResourceInfo();
+        if (
+          unit.type === UnitType.GIANT &&
+          resourceInfo?.type === ResourceType.LUMBER
+        ) {
+          //todo Gathering
+        } else {
+          const message = 'You cannot gather that';
+          this.outputMessages.push(message);
+        }
+      } else {
+        const message = 'There is nothing to gather';
+        this.outputMessages.push(message);
+      }
+    } else {
+      const message = 'You cannot gather that';
+      this.outputMessages.push(message);
+    }
 
     /*
-    1. Check if there is a resource on the current position, 
-    if yes continue, if not print "There is nothing to gather"
-    2. todo
+    res.position.x === unit.position.x && res.position.y === unit.position.y
     If there are no resources at the current coordinates: ‘There is nothing to gather’
     If a non-gatherer unit tries to gather anything OR if a giant 
     tries to gather anything except lumber: ‘You cannot gather that’
