@@ -57,14 +57,14 @@ export class AppComponent {
           break;
         case 'go':
           const objCoords = this.getCoordinatesByString(commands[3]);
-          if (isNaN(Number(objCoords.x)) || isNaN(Number(objCoords.y))) {
+          if (isNaN(objCoords.x) || isNaN(objCoords.y)) {
             this.outputMessages.push(`Please enter valid coordinates!`);
-            break;
+          } else {
+            unit.modifyPosition(objCoords);
+            this.outputMessages.push(
+              `${unit.name} moved to ${objCoords.x},${objCoords.y}`
+            );
           }
-          unit.modifyPosition(objCoords);
-          this.outputMessages.push(
-            `${unit.name} moved to ${objCoords.x},${objCoords.y}`
-          );
           break;
         default:
           break;
