@@ -64,15 +64,7 @@ export class AppComponent {
           this.gatherResource(unit);
           break;
         case 'go':
-          const objCoords = this.getCoordinatesByString(commands[3]);
-          if (isNaN(objCoords.x) || isNaN(objCoords.y)) {
-            this.outputMessages.push(`Please enter valid coordinates!`);
-          } else {
-            unit.modifyPosition(objCoords);
-            this.outputMessages.push(
-              `${unit.name} moved to ${objCoords.x},${objCoords.y}`
-            );
-          }
+          this.go(commands[3], unit);
           break;
         default:
           break;
@@ -162,7 +154,9 @@ export class AppComponent {
       unit.position
     );
 
+    //Can Unit Gather
     if (unit.canGather) {
+      //Is there a resource at this position
       if (isThereResource) {
         const resource = this.resources.find(
           (res) =>
@@ -170,6 +164,7 @@ export class AppComponent {
             res.position.y === unit.position.y
         );
         const resourceInfo = resource?.getResourceInfo();
+        // Can the unit actually gather this resource
         if (
           unit.type === UnitType.GIANT &&
           resourceInfo?.type === ResourceType.LUMBER
@@ -196,6 +191,18 @@ export class AppComponent {
     When the gather is successful: 
     ‘Successfully gathered {quantity} {resource}. Team {teamName} now has {X} food, {Y} lumber and {Z} iron.’
     */
+  }
+
+  private go(coordinates: string, unit: Unit) {
+    const inputCoordinates = this.getCoordinatesByString(coordinates);
+    if (isNaN(inputCoordinates.x) || isNaN(inputCoordinates.y)) {
+      this.outputMessages.push(`Please enter valid coordinates!`);
+    } else {
+      unit.modifyPosition(inputCoordinates);
+      this.outputMessages.push(
+        `${unit.name} moved to ${inputCoordinates.x},${inputCoordinates.y}`
+      );
+    }
   }
 
   private isPositionClear(
