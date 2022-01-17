@@ -14,15 +14,15 @@ export class AppComponent {
   public resources: Resource[] = [];
   public names: string[] = [];
   public teamResourceCount: { [key: string]: any } = {
-    blue: {
-      lumber: 0,
-      iron: 0,
-      food: 0,
+    BLUE: {
+      LUMBER: 0,
+      IRON: 0,
+      FOOD: 0,
     },
-    red: {
-      lumber: 0,
-      iron: 0,
-      food: 0,
+    RED: {
+      LUMBER: 0,
+      IRON: 0,
+      FOOD: 0,
     },
   };
   @ViewChild('inputArea') inputArea: ElementRef;
@@ -31,6 +31,7 @@ export class AppComponent {
 
   executeCommand() {
     const commands = this.inputArea.nativeElement.value.split(' ');
+    console.log(this.resources);
 
     console.log(commands);
 
@@ -120,7 +121,6 @@ export class AppComponent {
         break;
     }
   }
-
   private createResource(input: string[]) {
     const resourceName = <ResourceType>input[0].toUpperCase();
     const isLegitResource = resourceName in ResourceType;
@@ -154,22 +154,28 @@ export class AppComponent {
       unit.position
     );
 
-    //Can Unit Gather
     if (unit.canGather) {
-      //Is there a resource at this position
       if (isThereResource) {
         const resource = this.resources.find(
           (res) =>
             res.position.x === unit.position.x &&
             res.position.y === unit.position.y
         );
-        const resourceInfo = resource?.getResourceInfo();
-        // Can the unit actually gather this resource
-        if (
-          unit.type === UnitType.GIANT &&
-          resourceInfo?.type === ResourceType.LUMBER
-        ) {
-          //todo Gathering
+        const resourceInfo = resource!.getResourceInfo();
+        const canGatherExtendedCheck =
+          (unit.type === UnitType.GIANT &&
+            resourceInfo!.type === ResourceType.LUMBER) ||
+          unit.type === UnitType.PEASANT;
+        if (canGatherExtendedCheck) {
+          this.updateTeamResources(
+            resourceInfo!.type,
+            resourceInfo!.quantity,
+            unit.team
+          );
+          resource!.destroyResource();
+          this.removeResource();
+          const message = `Successfully gathered ${resourceInfo.quantity} ${resourceInfo.type}. Team ${unit.team} now has {X} food, {Y} lumber and {Z} iron.`;
+          this.outputMessages.push(message);
         } else {
           const message = 'You cannot gather that';
           this.outputMessages.push(message);
@@ -182,15 +188,6 @@ export class AppComponent {
       const message = 'You cannot gather that';
       this.outputMessages.push(message);
     }
-
-    /*
-    res.position.x === unit.position.x && res.position.y === unit.position.y
-    If there are no resources at the current coordinates: ‘There is nothing to gather’
-    If a non-gatherer unit tries to gather anything OR if a giant 
-    tries to gather anything except lumber: ‘You cannot gather that’
-    When the gather is successful: 
-    ‘Successfully gathered {quantity} {resource}. Team {teamName} now has {X} food, {Y} lumber and {Z} iron.’
-    */
   }
 
   private go(coordinates: string, unit: Unit) {
@@ -203,6 +200,22 @@ export class AppComponent {
         `${unit.name} moved to ${inputCoordinates.x},${inputCoordinates.y}`
       );
     }
+  }
+
+  private removeResource() {
+    this.resources.forEach((el, index) => {
+      if (el.isDestroyed) {
+        this.resources.splice(index, 1);
+      }
+    });
+  }
+
+  private updateTeamResources(
+    resource: ResourceType,
+    quantity: number,
+    team: Team
+  ) {
+    this.teamResourceCount[team][resource] += quantity;
   }
 
   private isPositionClear(
