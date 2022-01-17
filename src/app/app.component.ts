@@ -14,15 +14,15 @@ export class AppComponent {
   public resources: Resource[] = [];
   public names: string[] = [];
   public teamResourceCount: { [key: string]: any } = {
-    blue: {
-      lumber: 0,
-      iron: 0,
-      food: 0,
+    BLUE: {
+      LUMBER: 0,
+      IRON: 0,
+      FOOD: 0,
     },
-    red: {
-      lumber: 0,
-      iron: 0,
-      food: 0,
+    RED: {
+      LUMBER: 0,
+      IRON: 0,
+      FOOD: 0,
     },
   };
   public teamPointsCount: { [key: string]: number } = {
@@ -35,6 +35,7 @@ export class AppComponent {
 
   executeCommand() {
     const commands = this.inputArea.nativeElement.value.split(' ');
+    console.log(this.resources);
 
     console.log(commands);
 
@@ -75,18 +76,10 @@ export class AppComponent {
           // unit.attack();
           break;
         case 'gather':
-          // unit.gather();
+          this.gatherResource(unit);
           break;
         case 'go':
-          const objCoords = this.getCoordinatesByString(commands[3]);
-          if (isNaN(objCoords.x) || isNaN(objCoords.y)) {
-            this.outputMessages.push(`Please enter valid coordinates!`);
-          } else {
-            unit.modifyPosition(objCoords);
-            this.outputMessages.push(
-              `${unit.name} moved to ${objCoords.x},${objCoords.y}`
-            );
-          }
+          this.go(commands[3], unit);
           break;
         default:
           break;
@@ -110,8 +103,6 @@ export class AppComponent {
       this.outputMessages.push(`Please enter a valid command`);
     }
   }
-
-  //TODO: two cases with createObject and createResource
 
   private createObject(commands: string[]) {
     const objectType = commands[1].toLowerCase();
@@ -159,7 +150,6 @@ export class AppComponent {
         break;
     }
   }
-
   private createResource(input: string[]) {
     const resourceName = <ResourceType>input[0].toUpperCase();
     const isLegitResource = resourceName in ResourceType;
@@ -187,6 +177,65 @@ export class AppComponent {
     }
   }
 
+  private gatherResource(unit: Unit) {
+    const isThereResource = !this.isPositionClear(
+      this.resources,
+      unit.position
+    );
+
+    if (unit.canGather) {
+      if (isThereResource) {
+        const resource = this.resources.find(
+          (res) =>
+            res.position.x === unit.position.x &&
+            res.position.y === unit.position.y
+        );
+        const resourceInfo = resource!.getResourceInfo();
+        const canGatherExtendedCheck =
+          (unit.type === UnitType.GIANT &&
+            resourceInfo!.type === ResourceType.LUMBER) ||
+          unit.type === UnitType.PEASANT;
+        if (canGatherExtendedCheck) {
+          this.teamResourceCount[unit.team][resourceInfo.type] += resourceInfo.quantity;
+          resource!.destroyResource();
+          this.removeResource();
+          const message = `Successfully gathered ${resourceInfo.quantity} ${
+            resourceInfo.type
+          }. ${this.getTeamResources(unit.team)}`;
+          this.outputMessages.push(message);
+        } else {
+          const message = 'You cannot gather that';
+          this.outputMessages.push(message);
+        }
+      } else {
+        const message = 'There is nothing to gather';
+        this.outputMessages.push(message);
+      }
+    } else {
+      const message = 'You cannot gather that';
+      this.outputMessages.push(message);
+    }
+  }
+
+  private go(coordinates: string, unit: Unit) {
+    const inputCoordinates = this.getCoordinatesByString(coordinates);
+    if (isNaN(inputCoordinates.x) || isNaN(inputCoordinates.y)) {
+      this.outputMessages.push(`Please enter valid coordinates!`);
+    } else {
+      unit.modifyPosition(inputCoordinates);
+      this.outputMessages.push(
+        `${unit.name} moved to ${inputCoordinates.x},${inputCoordinates.y}`
+      );
+    }
+  }
+
+  private removeResource() {
+    this.resources.forEach((el, index) => {
+      if (el.isDestroyed) {
+        this.resources.splice(index, 1);
+      }
+    });
+  }
   private isPositionClear(
     resources: Resource[],
     coordinates: Position
@@ -315,13 +364,8 @@ export class AppComponent {
     }
     return returnString;
   }
-
-  private getTeamResources(team: string): string {
-    let returnString = `${team} team has:`;
-    const currentTeamResource = this.teamResourceCount[team.toLowerCase()];
-    for (const key in currentTeamResource) {
-      returnString += ` ${currentTeamResource[key]} ${key}`;
-    }
-    return returnString;
+  private getTeamResources(team: Team): string {
+    let message = `Team ${team} now has ${this.teamResourceCount[team].FOOD} food, ${this.teamResourceCount[team].LUMBER} lumber and ${this.teamResourceCount[team].IRON} iron.`;
+    return message;
   }
 }
