@@ -26,6 +26,19 @@ export interface Position {
   y: number;
 }
 
+// export interface RecourceCountModel {
+//   blue: {
+//     food: number;
+//     lumber: number;
+//     iron: number;
+//   };
+//   red: {
+//     food: number;
+//     lumber: number;
+//     iron: number;
+//   };
+// }
+
 export enum ResourceType {
   FOOD = 'FOOD',
   LUMBER = 'LUMBER',

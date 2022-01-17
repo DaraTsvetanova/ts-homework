@@ -16,6 +16,10 @@ export class AppComponent {
     blue: {},
     red: {},
   };
+  public teamPointsCount: { [key: string]: number } = {
+    blue: 0,
+    red: 0,
+  };
   @ViewChild('inputArea') inputArea: ElementRef;
 
   constructor() {}
@@ -36,6 +40,15 @@ export class AppComponent {
       case 'show':
         break;
       case 'end':
+        this.calcPoints();
+        const scores = this.getWinner();
+        this.outputMessages.push(
+          `The game is over. Team ${scores['winner']} is the winner with ${
+            this.teamPointsCount[scores['winner']]
+          } points, and team ${scores['looser']} is the loser with ${
+            this.teamPointsCount[scores['looser']]
+          } points`
+        );
         break;
       default:
         break;
@@ -79,8 +92,8 @@ export class AppComponent {
       case 'unit':
         const name = commands[2];
         const coordinates: Position = this.getCoordinatesByString(commands[3]);
-        const team: Team = commands[4].toUpperCase() as Team;
-        const type: UnitType = commands[5].toUpperCase() as UnitType;
+        const team: Team = <Team>commands[4].toUpperCase();
+        const type: UnitType = <UnitType>commands[5].toUpperCase();
 
         if (this.names.includes(name)) {
           this.outputMessages.push('Unit with this name already exists!');
@@ -124,5 +137,55 @@ export class AppComponent {
 
   private getStringByCoordinates(coordinates: Position): string {
     return `${coordinates.x},${coordinates.y}`;
+  }
+
+  private getTeamMembers(team: string): string {
+    let returnString = `${team} team has:`;
+    const posibleUnits: string[] = ['pesant', 'guard', 'ninja', 'giant'];
+    const currentTeam = this.units.filter(
+      (el) => el.team === team.toUpperCase()
+    );
+    for (const member of posibleUnits) {
+      returnString += ` ${
+        currentTeam.filter((el) => el.type === member.toUpperCase()).length
+      } ${member}s`;
+    }
+    return returnString;
+  }
+
+  private calcPoints(): void {
+    const posibleUnits: string[] = ['pesant', 'guard', 'ninja', 'giant'];
+    for (const team of ['blue', 'red']) {
+      const currentTeam = this.units.filter(
+        (el) => el.team === team.toUpperCase()
+      );
+      for (const unit of posibleUnits) {
+        const unitCount = currentTeam.filter(
+          (el) => el.type === unit.toUpperCase()
+        ).length;
+
+        if (unit === 'pesant') {
+          this.teamPointsCount[team] += unitCount * 5;
+        } else if (unit === 'guard') {
+          this.teamPointsCount[team] += unitCount * 10;
+        } else if (unit === 'ninja' || unit === 'giant') {
+          this.teamPointsCount[team] += unitCount * 15;
+        }
+      }
+      for (const key in this.teamResourceCount[team]) {
+        this.teamPointsCount[team] += this.teamResourceCount[team][key];
+      }
+    }
+  }
+  private getWinner(): { [key: string]: string } {
+    const finalScore: { [key: string]: string } = {};
+    if (this.teamPointsCount['blue'] > this.teamPointsCount['red']) {
+      finalScore['winner'] = 'blue';
+      finalScore['looser'] = 'red';
+    } else {
+      finalScore['winner'] = 'red';
+      finalScore['looser'] = 'blue';
+    }
+    return finalScore;
   }
 }
