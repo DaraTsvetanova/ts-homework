@@ -91,8 +91,6 @@ export class AppComponent {
     }
   }
 
-  //TODO: two cases with createObject and createResource
-
   private createObject(commands: string[]) {
     const objectType = commands[1].toLowerCase();
     switch (objectType) {
@@ -185,14 +183,12 @@ export class AppComponent {
             resourceInfo!.type === ResourceType.LUMBER) ||
           unit.type === UnitType.PEASANT;
         if (canGatherExtendedCheck) {
-          this.updateTeamResources(
-            resourceInfo!.type,
-            resourceInfo!.quantity,
-            unit.team
-          );
+          this.teamResourceCount[unit.team][resourceInfo.type] += resourceInfo.quantity;
           resource!.destroyResource();
           this.removeResource();
-          const message = `Successfully gathered ${resourceInfo.quantity} ${resourceInfo.type}. Team ${unit.team} now has {X} food, {Y} lumber and {Z} iron.`;
+          const message = `Successfully gathered ${resourceInfo.quantity} ${
+            resourceInfo.type
+          }. ${this.getTeamResources(unit.team)}`;
           this.outputMessages.push(message);
         } else {
           const message = 'You cannot gather that';
@@ -227,15 +223,6 @@ export class AppComponent {
       }
     });
   }
-
-  private updateTeamResources(
-    resource: ResourceType,
-    quantity: number,
-    team: Team
-  ) {
-    this.teamResourceCount[team][resource] += quantity;
-  }
-
   private isPositionClear(
     resources: Resource[],
     coordinates: Position
@@ -314,13 +301,8 @@ export class AppComponent {
     }
     return returnString;
   }
-
-  private getTeamResources(team: string): string {
-    let returnString = `${team} team has:`;
-    const currentTeamResource = this.teamResourceCount[team.toLowerCase()];
-    for (const key in currentTeamResource) {
-      returnString += ` ${currentTeamResource[key]} ${key}`;
-    }
-    return returnString;
+  private getTeamResources(team: Team): string {
+    let message = `Team ${team} now has ${this.teamResourceCount[team].FOOD} food, ${this.teamResourceCount[team].LUMBER} lumber and ${this.teamResourceCount[team].IRON} iron.`;
+    return message;
   }
 }
