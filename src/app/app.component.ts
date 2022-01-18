@@ -45,10 +45,10 @@ export class AppComponent {
     const command = commands[0];
     switch (command) {
       case 'create':
-        this.createObject(commands); // create Entity
+        this.createObject(commands);
         break;
       case 'order':
-        this.orderUnit(commands); // order to go, attack and gather
+        this.orderUnit(commands);
         break;
       case 'show':
         this.show(commands);
@@ -82,7 +82,6 @@ export class AppComponent {
       this.outputMessages.push(`Unit does not exist!`);
     }
   }
-  //show
   private show(commands: string[]) {
     if (commands[1] === 'all') {
       this.outputMessages.push(this.showAll());
