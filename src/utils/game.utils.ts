@@ -1,6 +1,7 @@
 // Add utility functions here to avoid poluting app.component.ts
 
 import { Resource } from 'src/classes/Resource';
+import { Unit } from 'src/classes/Unit';
 import { Position, Team } from 'src/models/models';
 
 export function areCoordinatesValid(coordinates: any) {
@@ -55,4 +56,20 @@ export function getWinner(teamPointsCount: any): string {
      and team ${looser} is the looser with ${teamPointsCount[looser]} points`;
   }
   return finalScore;
+}
+
+export function showCoordinateInfo(coordinates: string, units:Unit[]): string {
+  let returnString = `At position ${coordinates} there is a `;
+  const coordinateObj = getCoordinatesByString(coordinates);
+  const unitsOnCurrentCoords = units.filter(
+    (el) =>
+      el.position.x === coordinateObj.x && el.position.y === coordinateObj.y
+  );
+  if (unitsOnCurrentCoords.length < 1) {
+    return 'There are no unit on this position';
+  }
+  for (const unit of unitsOnCurrentCoords) {
+    returnString += `${unit.team} ${unit.type} named ${unit.name}; `;
+  }
+  return returnString;
 }

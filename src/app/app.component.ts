@@ -9,6 +9,7 @@ import {
   getTeamResources,
   getWinner,
   isPositionClear,
+  showCoordinateInfo,
 } from 'src/utils/game.utils';
 
 @Component({
@@ -98,7 +99,7 @@ export class AppComponent {
     } else if (commands[1] === 'resources') {
       this.outputMessages.push(this.showResources());
     } else if (areCoordinatesValid(commands[1])) {
-      this.outputMessages.push(this.showCoordinateInfo(commands[1]));
+      this.outputMessages.push(showCoordinateInfo(commands[1], this.units));
     } else {
       this.outputMessages.push(`Please enter a valid command or coordinates`);
     }
@@ -273,22 +274,6 @@ export class AppComponent {
       returnString += `there is ${resourceInfo.quantity} ${
         resourceInfo.type
       } at position ${getStringByCoordinates(resource.position)}; `;
-    }
-    return returnString;
-  }
-
-  private showCoordinateInfo(coordinates: string): string {
-    let returnString = `On this position there is`;
-    const coordinateObj = getCoordinatesByString(coordinates);
-    const unitsOnCurrentCoords = this.units.filter(
-      (el) =>
-        el.position.x === coordinateObj.x && el.position.y === coordinateObj.y
-    );
-    if (unitsOnCurrentCoords.length < 1) {
-      return 'There are no unit on this position';
-    }
-    for (const unit of unitsOnCurrentCoords) {
-      returnString += ` A ${unit.team} ${unit.type} named ${unit.name};`;
     }
     return returnString;
   }
