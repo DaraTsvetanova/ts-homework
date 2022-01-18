@@ -1,7 +1,7 @@
 // Add utility functions here to avoid poluting app.component.ts
 
 import { Resource } from 'src/classes/Resource';
-import { Position } from 'src/models/models';
+import { Position, Team } from 'src/models/models';
 
 export function areCoordinatesValid(coordinates: any) {
   const reg = /^((?!-0)-?[0-9]+)+,((?!-0)-?[0-9]+)+$/;
@@ -31,4 +31,9 @@ export function getCoordinatesByString(coordinates: string): Position {
 
 export function getStringByCoordinates(coordinates: Position): string {
   return `${coordinates.x},${coordinates.y}`;
+}
+
+export function getTeamResources(team: Team, teamResourceCount: any): string {
+  let message = `Team ${team} now has ${teamResourceCount[team].FOOD} food, ${teamResourceCount[team].LUMBER} lumber and ${teamResourceCount[team].IRON} iron.`;
+  return message;
 }

@@ -2,7 +2,13 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, ResourceType, Team, UnitType } from 'src/models/models';
-import { areCoordinatesValid, getCoordinatesByString, getStringByCoordinates, isPositionClear } from 'src/utils/game.utils';
+import {
+  areCoordinatesValid,
+  getCoordinatesByString,
+  getStringByCoordinates,
+  getTeamResources,
+  isPositionClear,
+} from 'src/utils/game.utils';
 
 @Component({
   selector: 'app-root',
@@ -97,9 +103,7 @@ export class AppComponent {
       switch (objectType) {
         case 'unit':
           const name = commands[2];
-          const coordinates: Position = getCoordinatesByString(
-            commands[3]
-          );
+          const coordinates: Position = getCoordinatesByString(commands[3]);
           const team: Team = commands[4].toUpperCase() as Team;
           const type: UnitType = commands[5].toUpperCase() as UnitType;
 
@@ -172,10 +176,7 @@ export class AppComponent {
   }
 
   private gatherResource(unit: Unit) {
-    const isThereResource = !isPositionClear(
-      this.resources,
-      unit.position
-    );
+    const isThereResource = !isPositionClear(this.resources, unit.position);
 
     if (unit.canGather) {
       if (isThereResource) {
@@ -196,7 +197,7 @@ export class AppComponent {
           this.removeResource();
           const message = `Successfully gathered ${resourceInfo.quantity} ${
             resourceInfo.type
-          }. ${this.getTeamResources(unit.team)}`;
+          }. ${getTeamResources(unit.team, this.teamResourceCount)}`;
           this.outputMessages.push(message);
         } else {
           const message = 'You cannot gather that';
@@ -231,9 +232,6 @@ export class AppComponent {
       }
     });
   }
-
-
-
 
   private showAll(): string {
     let returnString = `${this.showTeamMembers('blue')} 
@@ -287,9 +285,5 @@ export class AppComponent {
       returnString += ` a ${unit.type} named ${unit.name}`;
     }
     return returnString;
-  }
-  private getTeamResources(team: Team): string {
-    let message = `Team ${team} now has ${this.teamResourceCount[team].FOOD} food, ${this.teamResourceCount[team].LUMBER} lumber and ${this.teamResourceCount[team].IRON} iron.`;
-    return message;
   }
 }
