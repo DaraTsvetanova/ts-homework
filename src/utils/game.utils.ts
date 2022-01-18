@@ -3,7 +3,7 @@ import { Unit } from 'src/classes/Unit';
 import { Position, Team } from 'src/models/models';
 
 export function areCoordinatesValid(coordinates: any) {
-  const reg = /^((?!-0)-?[0-9]+)+,((?!-0)-?[0-9]+)+$/;
+  const reg = /^(?!-0)-?[0-9]+,(?!-0)-?[0-9]+$/;
   return reg.test(coordinates);
 }
 

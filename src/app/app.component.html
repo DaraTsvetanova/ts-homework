@@ -5,6 +5,7 @@
       autofocus
       class="console-input"
       placeholder="Type command..."
+      (keydown.enter)="executeCommand()"
     />
     <div class="btn-container">
       <button class="execute-button" role="button" (click)="executeCommand()">
