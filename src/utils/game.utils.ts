@@ -31,12 +31,6 @@ export function getCoordinatesByString(coordinates: string): Position {
 export function getStringByCoordinates(coordinates: Position): string {
   return `${coordinates.x},${coordinates.y}`;
 }
-
-export function getTeamResources(team: Team, teamResourceCount: any): string {
-  let message = `Team ${team} now has ${teamResourceCount[team].FOOD} food, ${teamResourceCount[team].LUMBER} lumber and ${teamResourceCount[team].IRON} iron.`;
-  return message;
-}
-
 export function getWinner(teamPointsCount: any): string {
   let finalScore = 'The game is over.';
   if (teamPointsCount[Team.BLUE] === teamPointsCount[Team.RED]) {

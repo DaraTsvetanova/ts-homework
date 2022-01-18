@@ -6,7 +6,6 @@ import {
   areCoordinatesValid,
   getCoordinatesByString,
   getStringByCoordinates,
-  getTeamResources,
   getWinner,
   isPositionClear,
   showCoordinateInfo,
@@ -206,7 +205,11 @@ export class AppComponent {
           this.removeResource();
           const message = `Successfully gathered ${resourceInfo.quantity} ${
             resourceInfo.type
-          }. ${getTeamResources(unit.team, this.teamResourceCount)}`;
+          }. Team ${unit.team} now has ${
+            this.teamResourceCount[unit.team].FOOD
+          } food, ${this.teamResourceCount[unit.team].LUMBER} lumber and ${
+            this.teamResourceCount[unit.team].IRON
+          } iron.`;
           this.outputMessages.push(message);
         } else {
           const message = 'You cannot gather that';
