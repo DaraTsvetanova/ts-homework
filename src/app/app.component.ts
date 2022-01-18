@@ -93,7 +93,6 @@ export class AppComponent {
     }
   }
   private show(commands: string[]) {
-    const reg = /[0-9]+,[0-9]+/;
     if (commands[1] === 'all') {
       this.showAll();
     } else if (commands[1] === 'units') {
