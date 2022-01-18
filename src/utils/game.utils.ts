@@ -73,3 +73,18 @@ export function showCoordinateInfo(coordinates: string, units:Unit[]): string {
   }
   return returnString;
 }
+
+export function showResources(resources:Resource[]): string {
+  let returnString = `Resources: `;
+  if (resources.length < 1) {
+    return 'There are currently no resources ';
+  }
+
+  for (const resource of resources) {
+    let resourceInfo = resource.getResourceInfo();
+    returnString += `there is ${resourceInfo.quantity} ${
+      resourceInfo.type
+    } at position ${getStringByCoordinates(resource.position)}; `;
+  }
+  return returnString;
+}

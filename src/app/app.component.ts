@@ -10,6 +10,7 @@ import {
   getWinner,
   isPositionClear,
   showCoordinateInfo,
+  showResources,
 } from 'src/utils/game.utils';
 
 @Component({
@@ -97,7 +98,7 @@ export class AppComponent {
     } else if (commands[1] === 'units') {
       this.outputMessages.push(this.showTeamMembers(commands[2]));
     } else if (commands[1] === 'resources') {
-      this.outputMessages.push(this.showResources());
+      this.outputMessages.push(showResources(this.resources));
     } else if (areCoordinatesValid(commands[1])) {
       this.outputMessages.push(showCoordinateInfo(commands[1], this.units));
     } else {
@@ -244,7 +245,7 @@ export class AppComponent {
   private showAll(): void {
     this.outputMessages.push(this.showTeamMembers('BLUE'));
     this.outputMessages.push(this.showTeamMembers('RED'));
-    this.outputMessages.push(this.showResources());
+    this.outputMessages.push(showResources(this.resources));
   }
 
   private showTeamMembers(team: string): string {
@@ -263,20 +264,7 @@ export class AppComponent {
     return returnString;
   }
 
-  private showResources(): string {
-    let returnString = `Resources: `;
-    if (this.resources.length < 1) {
-      return 'There are currently no resources ';
-    }
-
-    for (const resource of this.resources) {
-      let resourceInfo = resource.getResourceInfo();
-      returnString += `there is ${resourceInfo.quantity} ${
-        resourceInfo.type
-      } at position ${getStringByCoordinates(resource.position)}; `;
-    }
-    return returnString;
-  }
+ 
 
   private calcPoints(): void {
     for (const team of Object.keys(this.teamPointsCount)) {
