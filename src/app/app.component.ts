@@ -11,6 +11,7 @@ import {
   isPositionClear,
   showCoordinateInfo,
   showResources,
+  showTeamMembers,
 } from 'src/utils/game.utils';
 
 @Component({
@@ -96,7 +97,7 @@ export class AppComponent {
     if (commands[1] === 'all') {
       this.showAll();
     } else if (commands[1] === 'units') {
-      this.outputMessages.push(this.showTeamMembers(commands[2]));
+      this.outputMessages.push(showTeamMembers(commands[2], this.units));
     } else if (commands[1] === 'resources') {
       this.outputMessages.push(showResources(this.resources));
     } else if (areCoordinatesValid(commands[1])) {
@@ -243,28 +244,10 @@ export class AppComponent {
   }
 
   private showAll(): void {
-    this.outputMessages.push(this.showTeamMembers('BLUE'));
-    this.outputMessages.push(this.showTeamMembers('RED'));
+    this.outputMessages.push(showTeamMembers('BLUE', this.units));
+    this.outputMessages.push(showTeamMembers('RED', this.units));
     this.outputMessages.push(showResources(this.resources));
   }
-
-  private showTeamMembers(team: string): string {
-    let returnString = `${team}:`;
-    const teamMembers = this.units.filter(
-      (el) => el.team === team.toUpperCase()
-    );
-    if (teamMembers.length < 1) {
-      return `There are currently no units for team ${team} `;
-    }
-    for (const unit of teamMembers) {
-      returnString += ` ${unit.name} is at ${getStringByCoordinates(
-        unit.position
-      )};`;
-    }
-    return returnString;
-  }
-
- 
 
   private calcPoints(): void {
     for (const team of Object.keys(this.teamPointsCount)) {

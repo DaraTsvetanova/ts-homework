@@ -58,7 +58,7 @@ export function getWinner(teamPointsCount: any): string {
   return finalScore;
 }
 
-export function showCoordinateInfo(coordinates: string, units:Unit[]): string {
+export function showCoordinateInfo(coordinates: string, units: Unit[]): string {
   let returnString = `At position ${coordinates} there is a `;
   const coordinateObj = getCoordinatesByString(coordinates);
   const unitsOnCurrentCoords = units.filter(
@@ -74,7 +74,7 @@ export function showCoordinateInfo(coordinates: string, units:Unit[]): string {
   return returnString;
 }
 
-export function showResources(resources:Resource[]): string {
+export function showResources(resources: Resource[]): string {
   let returnString = `Resources: `;
   if (resources.length < 1) {
     return 'There are currently no resources ';
@@ -87,4 +87,22 @@ export function showResources(resources:Resource[]): string {
     } at position ${getStringByCoordinates(resource.position)}; `;
   }
   return returnString;
+}
+
+export function showTeamMembers(team: string, units: Unit[]): string {
+
+  if (team.toUpperCase() === 'RED' || team.toUpperCase() === 'BLUE') {
+    let returnString = `Currently the ${team.toUpperCase()} team has the following members:`;
+    const teamMembers = units.filter((el) => el.team === team.toUpperCase());
+    if (teamMembers.length < 1) {
+      return `There are currently no units for team ${team.toUpperCase()} `;
+    }
+    for (const unit of teamMembers) {
+      returnString += ` ${unit.name} is at ${getStringByCoordinates(
+        unit.position
+      )};`;
+    }
+    return returnString;
+  }
+  return 'Please enter a valid team name!';
 }
