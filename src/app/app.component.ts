@@ -156,7 +156,6 @@ export class AppComponent {
       );
     });
 
-    //exclude myself from teammates
     const teammates = this.units.filter((el) => {
       return (
         el.team === unit.team &&
