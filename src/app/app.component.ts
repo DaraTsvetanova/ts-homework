@@ -243,8 +243,8 @@ export class AppComponent {
   }
 
   private showAll(): void {
-    this.outputMessages.push(showTeamMembers('BLUE', this.units));
-    this.outputMessages.push(showTeamMembers('RED', this.units));
+    this.outputMessages.push(showTeamMembers(Team.BLUE, this.units));
+    this.outputMessages.push(showTeamMembers(Team.RED, this.units));
     this.outputMessages.push(showResources(this.resources));
   }
 
