@@ -31,6 +31,15 @@ export class Unit extends WorldObject implements UnitModel {
     this.setUnitStats(type);
   }
 
+  public getDamage(opponent: string): number {
+    if (opponent === 'attacker') {
+      if (Math.random() >= 0.5) {
+        return this.attack * 2;
+      }
+    }
+    return this.attack;
+  }
+
   private setUnitStats(type: UnitType) {
     switch (type) {
       case UnitType.PEASANT:

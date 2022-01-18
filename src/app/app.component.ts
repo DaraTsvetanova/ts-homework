@@ -13,6 +13,14 @@ import {
   showTeamMembers,
 } from 'src/utils/game.utils';
 
+function isUnitType(type: string): type is UnitType {
+  return Object.keys(UnitType).includes(type);
+}
+
+// function isResourceType(type: string): type is ResourceType {
+//   return Object.keys(ResourceType).includes(type)
+// }
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -43,7 +51,7 @@ export class AppComponent {
 
   constructor() {}
 
-  executeCommand() {
+  executeCommand(): void {
     const commands = this.inputArea.nativeElement.value.split(' ');
     console.log(this.resources);
 
@@ -69,15 +77,17 @@ export class AppComponent {
     }
   }
 
-  public orderUnit(commands: string[]) {
+  public orderUnit(commands: string[]): void {
     const unit = this.units.find(
       (el) => el.name.toUpperCase() === commands[1].toUpperCase()
     );
+
     if (unit) {
       switch (commands[2]) {
         case 'attack':
-          // unit.attack();
+          this.attack(unit);
           break;
+
         case 'gather':
           this.gatherResource(unit);
           break;
@@ -91,7 +101,8 @@ export class AppComponent {
       this.outputMessages.push(`Unit does not exist!`);
     }
   }
-  private show(commands: string[]) {
+
+  private show(commands: string[]): void {
     if (commands[1] === 'all') {
       this.showAll();
     } else if (commands[1] === 'units') {
@@ -105,7 +116,7 @@ export class AppComponent {
     }
   }
 
-  private createObject(commands: string[]) {
+  private createObject(commands: string[]): void {
     const objectType = commands[1].toLowerCase();
     if (areCoordinatesValid(commands[3])) {
       switch (objectType) {
@@ -113,7 +124,14 @@ export class AppComponent {
           const name = commands[2];
           const coordinates: Position = getCoordinatesByString(commands[3]);
           const team: Team = commands[4].toUpperCase() as Team;
-          const type: UnitType = commands[5].toUpperCase() as UnitType;
+
+          const unitType = commands[5].toUpperCase();
+
+          if (!isUnitType(unitType)) {
+            break;
+          }
+
+          const type = UnitType[unitType];
 
           if (this.names.includes(name)) {
             this.outputMessages.push('Unit with this name already exists!');
@@ -156,7 +174,72 @@ export class AppComponent {
       this.outputMessages.push(message);
     }
   }
-  private createResource(input: string[]) {
+
+  private attack(unit: Unit): void {
+    let damageDealtByAttacker = 0;
+    let damageDealtByDefender = 0;
+
+    const enemies = this.units.filter((enemy) => {
+      return (
+        getStringByCoordinates(enemy.position) ===
+          getStringByCoordinates(unit.position) && enemy.team !== unit.team
+      );
+    });
+
+    const teammates = this.units.filter((el) => {
+      return (
+        el.team === unit.team &&
+        getStringByCoordinates(el.position) ===
+          getStringByCoordinates(unit.position) &&
+        el.name !== unit.name
+      );
+    });
+
+    if (teammates.length < 1 && enemies.length < 1) {
+      this.outputMessages.push(
+        `There's no units to attack at the coordinates: ${unit.position.x}, ${unit.position.y}`
+      );
+    } else if (teammates.length >= 1 && enemies.length < 1) {
+      this.outputMessages.push(`You cannot attack your friends, dummy!`);
+    } else if (enemies.length >= 1) {
+      if (unit.type === UnitType.NINJA) {
+        enemies.map((enemy) => {
+          const damage = unit.getDamage('attacker') - enemy.defense;
+          enemy.modifyHealthPoints(-damage);
+          damageDealtByAttacker += damage;
+        });
+      } else {
+        const enemy = enemies[Math.floor(Math.random() * enemies.length)];
+
+        const damageDefender = enemy.getDamage('enemy') - unit.defense;
+
+        const damageAttacker = unit.getDamage('attacker') - enemy.defense;
+
+        enemy.modifyHealthPoints(-damageAttacker);
+
+        unit.modifyHealthPoints(-damageDefender);
+
+        damageDealtByDefender += damageDefender;
+
+        damageDealtByAttacker += damageAttacker;
+      }
+
+      const deadUnits = enemies.filter((enemy) => enemy.isDestroyed === true);
+      const enemyNames = enemies.map((enemy) => enemy.name).join(' & ');
+
+      if (unit.isDestroyed) {
+        deadUnits.push(unit);
+      }
+      this.removeUnit();
+      this.outputMessages.push(
+        `There was a fierce battle between ${unit.name} from team ${unit.team} and ${enemyNames} from the enemy team.
+        The defenders took totally ${damageDealtByAttacker} damage.
+        The attacker took ${damageDealtByDefender} damage. There are ${deadUnits.length} dead units after the fight was over`
+      );
+    }
+  }
+
+  private createResource(input: string[]): void {
     const resourceName = <ResourceType>input[0].toUpperCase();
     const isLegitResource = resourceName in ResourceType;
     const coordinates = getCoordinatesByString(input[1]);
@@ -183,7 +266,7 @@ export class AppComponent {
     }
   }
 
-  private gatherResource(unit: Unit) {
+  private gatherResource(unit: Unit): void {
     const isThereResource = !isPositionClear(this.resources, unit.position);
 
     if (unit.canGather) {
@@ -225,7 +308,7 @@ export class AppComponent {
     }
   }
 
-  private go(coordinates: string, unit: Unit) {
+  private go(coordinates: string, unit: Unit): void {
     const inputCoordinates = getCoordinatesByString(coordinates);
     if (areCoordinatesValid(coordinates)) {
       this.outputMessages.push(`Please enter valid coordinates!`);
@@ -237,10 +320,18 @@ export class AppComponent {
     }
   }
 
-  private removeResource() {
+  private removeResource(): void {
     this.resources.forEach((el, index) => {
       if (el.isDestroyed) {
         this.resources.splice(index, 1);
+      }
+    });
+  }
+
+  private removeUnit(): void {
+    this.units.forEach((el, index) => {
+      if (el.isDestroyed) {
+        this.units.splice(index, 1);
       }
     });
   }
