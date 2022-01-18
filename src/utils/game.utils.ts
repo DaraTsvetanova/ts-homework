@@ -37,3 +37,22 @@ export function getTeamResources(team: Team, teamResourceCount: any): string {
   let message = `Team ${team} now has ${teamResourceCount[team].FOOD} food, ${teamResourceCount[team].LUMBER} lumber and ${teamResourceCount[team].IRON} iron.`;
   return message;
 }
+
+export function getWinner(teamPointsCount: any): string {
+  let finalScore = 'The game is over.';
+  if (teamPointsCount[Team.BLUE] === teamPointsCount[Team.RED]) {
+    return 'ITS A DRAW';
+  } else {
+    const winner =
+      teamPointsCount[Team.BLUE] > teamPointsCount[Team.RED]
+        ? Team.BLUE
+        : Team.RED;
+    const looser =
+      teamPointsCount[Team.BLUE] < teamPointsCount[Team.RED]
+        ? Team.BLUE
+        : Team.RED;
+    finalScore += ` Team ${winner} is the winner with ${teamPointsCount[winner]} points,
+     and team ${looser} is the looser with ${teamPointsCount[looser]} points`;
+  }
+  return finalScore;
+}

@@ -7,6 +7,7 @@ import {
   getCoordinatesByString,
   getStringByCoordinates,
   getTeamResources,
+  getWinner,
   isPositionClear,
 } from 'src/utils/game.utils';
 
@@ -59,7 +60,7 @@ export class AppComponent {
         break;
       case 'end':
         this.calcPoints();
-        this.outputMessages.push(this.getWinner());
+        this.outputMessages.push(getWinner(this.teamPointsCount));
         break;
       default:
         break;
@@ -292,12 +293,6 @@ export class AppComponent {
     return returnString;
   }
 
-  private getTeamResources(team: Team): string {
-    let message = `Team ${team} now has ${this.teamResourceCount[team].FOOD} food,
-     ${this.teamResourceCount[team].LUMBER} lumber and ${this.teamResourceCount[team].IRON} iron.`;
-    return message;
-  }
-
   private calcPoints(): void {
     for (const team of Object.keys(this.teamPointsCount)) {
       const currentTeam = this.units.filter(
@@ -321,24 +316,5 @@ export class AppComponent {
         this.teamPointsCount[team] += this.teamResourceCount[team][key] * 10;
       }
     }
-  }
-
-  private getWinner(): string {
-    let finalScore = 'The game is over.';
-    if (this.teamPointsCount[Team.BLUE] === this.teamPointsCount[Team.RED]) {
-      return 'ITS A DRAW';
-    } else {
-      const winner =
-        this.teamPointsCount[Team.BLUE] > this.teamPointsCount[Team.RED]
-          ? Team.BLUE
-          : Team.RED;
-      const looser =
-        this.teamPointsCount[Team.BLUE] < this.teamPointsCount[Team.RED]
-          ? Team.BLUE
-          : Team.RED;
-      finalScore += ` Team ${winner} is the winner with ${this.teamPointsCount[winner]} points,
-       and team ${looser} is the looser with ${this.teamPointsCount[looser]} points`;
-    }
-    return finalScore;
   }
 }
