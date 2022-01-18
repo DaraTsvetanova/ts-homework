@@ -165,8 +165,6 @@ export class AppComponent {
       );
     });
 
-    console.log(teammates);
-
     if (teammates.length < 1 && enemies.length < 1) {
       this.outputMessages.push(
         `There's no units to attack at the coordinates: ${unit.position.x}, ${unit.position.y}`
@@ -182,30 +180,31 @@ export class AppComponent {
         });
       } else {
         const enemy = enemies[Math.floor(Math.random() * enemies.length)];
-        console.log(enemy);
+
         const damageDefender = enemy.getDamage('enemy') - unit.defense;
-        console.log(damageDefender);
+
         const damageAttacker = unit.getDamage('attacker') - enemy.defense;
-        console.log(damageAttacker);
+
         enemy.modifyHealthPoints(-damageAttacker);
-        console.log(enemy.healthPoints);
+
         unit.modifyHealthPoints(-damageDefender);
-        console.log(unit.healthPoints);
+
         damageDealtByDefender += damageDefender;
+
         damageDealtByAttacker += damageAttacker;
       }
-      console.log(enemies);
+
       const deadUnits = enemies.filter((enemy) => enemy.isDestroyed === true);
       const enemyNames = enemies.map((enemy) => enemy.name).join(' & ');
 
       if (unit.isDestroyed) {
         deadUnits.push(unit);
       }
-      console.log(deadUnits);
+
       this.outputMessages.push(
         `There was a fierce battle between ${unit.name} and ${enemyNames}.
-        The defenders took totally ${damageDealtByAttacker}.
-        The attacker took ${damageDealtByDefender}. There are ${deadUnits.length} dead units after the fight was over`
+        The defenders took totally ${damageDealtByAttacker} damage.
+        The attacker took ${damageDealtByDefender} damage. There are ${deadUnits.length} dead units after the fight was over`
       );
     }
   }
