@@ -1,5 +1,3 @@
-// Add utility functions here to avoid poluting app.component.ts
-
 import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, Team } from 'src/models/models';
