@@ -27,7 +27,17 @@ export class Unit extends WorldObject implements UnitModel {
   constructor(position: Position, team: Team, name: string, type: UnitType) {
     super(position, true, team);
     this._name = name;
+    this._type = type;
     this.setUnitStats(type);
+  }
+
+  public getDamage(opponent: string): number {
+    if (opponent === 'attacker') {
+      if (Math.random() >= 0.5) {
+        return this.attack * 2;
+      }
+    }
+    return this.attack;
   }
 
   private setUnitStats(type: UnitType) {

@@ -3,6 +3,14 @@ import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, ResourceType, Team, UnitType } from 'src/models/models';
 
+function isUnitType(type: string): type is UnitType {
+  return Object.keys(UnitType).includes(type);
+}
+
+// function isResourceType(type: string): type is ResourceType {
+//   return Object.keys(ResourceType).includes(type)
+// }
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -55,11 +63,13 @@ export class AppComponent {
     const unit = this.units.find(
       (el) => el.name.toUpperCase() === commands[1].toUpperCase()
     );
+
     if (unit) {
       switch (commands[2]) {
         case 'attack':
-          // unit.attack();
+          this.attack(unit);
           break;
+
         case 'gather':
           // unit.gather();
           break;
@@ -81,7 +91,7 @@ export class AppComponent {
       this.outputMessages.push(`Unit does not exist!`);
     }
   }
-  //TODO: two cases with createObject and createResource
+
   public createObject(commands: string[]) {
     const objectType = commands[1].toLowerCase();
     switch (objectType) {
@@ -89,7 +99,14 @@ export class AppComponent {
         const name = commands[2];
         const coordinates: Position = this.getCoordinatesByString(commands[3]);
         const team: Team = commands[4].toUpperCase() as Team;
-        const type: UnitType = commands[5].toUpperCase() as UnitType;
+
+        const unitType = commands[5].toUpperCase();
+
+        if (!isUnitType(unitType)) {
+          break;
+        }
+
+        const type = UnitType[unitType];
 
         if (this.names.includes(name)) {
           this.outputMessages.push('Unit with this name already exists!');
@@ -126,6 +143,71 @@ export class AppComponent {
         break;
       default:
         break;
+    }
+  }
+  private attack(unit: Unit) {
+    let damageDealtByAttacker = 0;
+    let damageDealtByDefender = 0;
+
+    const enemies = this.units.filter((enemy) => {
+      return (
+        this.getStringByCoordinates(enemy.position) ===
+          this.getStringByCoordinates(unit.position) && enemy.team !== unit.team
+      );
+    });
+
+    //exclude myself from teammates
+    const teammates = this.units.filter((el) => {
+      return (
+        el.team === unit.team &&
+        this.getStringByCoordinates(el.position) ===
+          this.getStringByCoordinates(unit.position) &&
+        el.name !== unit.name
+      );
+    });
+
+    console.log(teammates);
+
+    if (teammates.length < 1 && enemies.length < 1) {
+      this.outputMessages.push(
+        `There's no units to attack at the coordinates: ${unit.position.x}, ${unit.position.y}`
+      );
+    } else if (teammates.length > 1 && enemies.length < 1) {
+      this.outputMessages.push(`You cannot attack your friends, dummy!`);
+    } else if (enemies.length >= 1) {
+      if (unit.type === UnitType.NINJA) {
+        enemies.map((enemy) => {
+          const damage = unit.getDamage('attacker') - enemy.defense;
+          enemy.modifyHealthPoints(-damage);
+          damageDealtByAttacker += damage;
+        });
+      } else {
+        const enemy = enemies[Math.floor(Math.random() * enemies.length)];
+        console.log(enemy);
+        const damageDefender = enemy.getDamage('enemy') - unit.defense;
+        console.log(damageDefender);
+        const damageAttacker = unit.getDamage('attacker') - enemy.defense;
+        console.log(damageAttacker);
+        enemy.modifyHealthPoints(-damageAttacker);
+        console.log(enemy.healthPoints);
+        unit.modifyHealthPoints(-damageDefender);
+        console.log(unit.healthPoints);
+        damageDealtByDefender += damageDefender;
+        damageDealtByAttacker += damageAttacker;
+      }
+      console.log(enemies);
+      const deadUnits = enemies.filter((enemy) => enemy.isDestroyed === true);
+      const enemyNames = enemies.map((enemy) => enemy.name).join(' & ');
+
+      if (unit.isDestroyed) {
+        deadUnits.push(unit);
+      }
+      console.log(deadUnits);
+      this.outputMessages.push(
+        `There was a fierce battle between ${unit.name} and ${enemyNames}.
+        The defenders took totally ${damageDealtByAttacker}.
+        The attacker took ${damageDealtByDefender}. There are ${deadUnits.length} dead units after the fight was over`
+      );
     }
   }
 
