@@ -2,6 +2,16 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, ResourceType, Team, UnitType } from 'src/models/models';
+import {
+  areCoordinatesValid,
+  getCoordinatesByString,
+  getStringByCoordinates,
+  getWinner,
+  isPositionClear,
+  showCoordinateInfo,
+  showResources,
+  showTeamMembers,
+} from 'src/utils/game.utils';
 
 @Component({
   selector: 'app-root',
@@ -42,17 +52,17 @@ export class AppComponent {
     const command = commands[0];
     switch (command) {
       case 'create':
-        this.createObject(commands); // create Entity
+        this.createObject(commands);
         break;
       case 'order':
-        this.orderUnit(commands); // order to go, attack and gather
+        this.orderUnit(commands);
         break;
       case 'show':
         this.show(commands);
         break;
       case 'end':
         this.calcPoints();
-        this.outputMessages.push(this.getWinner());
+        this.outputMessages.push(getWinner(this.teamPointsCount));
         break;
       default:
         break;
@@ -81,17 +91,15 @@ export class AppComponent {
       this.outputMessages.push(`Unit does not exist!`);
     }
   }
-  //show
   private show(commands: string[]) {
-    const reg = /[0-9]+,[0-9]+/;
     if (commands[1] === 'all') {
       this.showAll();
     } else if (commands[1] === 'units') {
-      this.outputMessages.push(this.showTeamMembers(commands[2]));
+      this.outputMessages.push(showTeamMembers(commands[2], this.units));
     } else if (commands[1] === 'resources') {
-      this.outputMessages.push(this.showResources());
-    } else if (reg.test(commands[1])) {
-      this.outputMessages.push(this.showCoordinateInfo(commands[1]));
+      this.outputMessages.push(showResources(this.resources));
+    } else if (areCoordinatesValid(commands[1])) {
+      this.outputMessages.push(showCoordinateInfo(commands[1], this.units));
     } else {
       this.outputMessages.push(`Please enter a valid command or coordinates`);
     }
@@ -99,61 +107,66 @@ export class AppComponent {
 
   private createObject(commands: string[]) {
     const objectType = commands[1].toLowerCase();
-    switch (objectType) {
-      case 'unit':
-        const name = commands[2];
-        const coordinates: Position = this.getCoordinatesByString(commands[3]);
-        const team: Team = <Team>commands[4].toUpperCase();
-        const type: UnitType = <UnitType>commands[5].toUpperCase();
+    if (areCoordinatesValid(commands[3])) {
+      switch (objectType) {
+        case 'unit':
+          const name = commands[2];
+          const coordinates: Position = getCoordinatesByString(commands[3]);
+          const team: Team = commands[4].toUpperCase() as Team;
+          const type: UnitType = commands[5].toUpperCase() as UnitType;
 
-        if (this.names.includes(name)) {
-          this.outputMessages.push('Unit with this name already exists!');
-          break;
-        }
+          if (this.names.includes(name)) {
+            this.outputMessages.push('Unit with this name already exists!');
+            break;
+          }
 
-        if (!Object.values(Team).includes(team)) {
+          if (!Object.values(Team).includes(team)) {
+            this.outputMessages.push(
+              `Team ${team.toLowerCase()} does not exist!`
+            );
+            break;
+          }
+
+          if (!Object.values(UnitType).includes(type)) {
+            this.outputMessages.push(
+              `Unit type ${type.toLowerCase()} is not valid!`
+            );
+            break;
+          }
+
+          const unit = new Unit(coordinates, team, name, type);
+          this.units.push(unit);
+          this.names.push(name);
           this.outputMessages.push(
-            `Team ${team.toLowerCase()} does not exist!`
+            `Created ${type} from ${team
+              .toString()
+              .toLowerCase()} team named ${name} at position ${getStringByCoordinates(
+              coordinates
+            )}`
           );
           break;
-        }
-
-        if (!Object.values(UnitType).includes(type)) {
-          this.outputMessages.push(
-            `Unit type ${type.toLowerCase()} is not valid!`
-          );
+        case 'resource':
+          this.createResource(commands.slice(-3));
           break;
-        }
-
-        const unit = new Unit(coordinates, team, name, type);
-        this.units.push(unit);
-        this.names.push(name);
-        this.outputMessages.push(
-          `Created ${type} from ${team
-            .toString()
-            .toLowerCase()} team named ${name} at position ${this.getStringByCoordinates(
-            coordinates
-          )}`
-        );
-        break;
-      case 'resource':
-        this.createResource(commands.slice(-3));
-        break;
-      default:
-        break;
+        default:
+          break;
+      }
+    } else {
+      const message = 'Please enter valid coordinates!';
+      this.outputMessages.push(message);
     }
   }
   private createResource(input: string[]) {
     const resourceName = <ResourceType>input[0].toUpperCase();
     const isLegitResource = resourceName in ResourceType;
-    const coordinates = this.getCoordinatesByString(input[1]);
+    const coordinates = getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
 
     if (quantity < 1) {
       const message = `Please provide valid quantity!`;
       this.outputMessages.push(message);
     } else {
-      if (!this.isPositionClear(this.resources, coordinates)) {
+      if (!isPositionClear(this.resources, coordinates)) {
         const message = `There is already a resource at this position, please try a different position.`;
         this.outputMessages.push(message);
       } else {
@@ -171,10 +184,7 @@ export class AppComponent {
   }
 
   private gatherResource(unit: Unit) {
-    const isThereResource = !this.isPositionClear(
-      this.resources,
-      unit.position
-    );
+    const isThereResource = !isPositionClear(this.resources, unit.position);
 
     if (unit.canGather) {
       if (isThereResource) {
@@ -195,7 +205,11 @@ export class AppComponent {
           this.removeResource();
           const message = `Successfully gathered ${resourceInfo.quantity} ${
             resourceInfo.type
-          }. ${this.getTeamResources(unit.team)}`;
+          }. Team ${unit.team} now has ${
+            this.teamResourceCount[unit.team].FOOD
+          } food, ${this.teamResourceCount[unit.team].LUMBER} lumber and ${
+            this.teamResourceCount[unit.team].IRON
+          } iron.`;
           this.outputMessages.push(message);
         } else {
           const message = 'You cannot gather that';
@@ -212,8 +226,8 @@ export class AppComponent {
   }
 
   private go(coordinates: string, unit: Unit) {
-    const inputCoordinates = this.getCoordinatesByString(coordinates);
-    if (isNaN(inputCoordinates.x) || isNaN(inputCoordinates.y)) {
+    const inputCoordinates = getCoordinatesByString(coordinates);
+    if (areCoordinatesValid(coordinates)) {
       this.outputMessages.push(`Please enter valid coordinates!`);
     } else {
       unit.modifyPosition(inputCoordinates);
@@ -230,88 +244,11 @@ export class AppComponent {
       }
     });
   }
-  private isPositionClear(
-    resources: Resource[],
-    coordinates: Position
-  ): boolean {
-    if (resources.length > 0) {
-      for (const resource of resources) {
-        const currentPosition = this.getStringByCoordinates(coordinates);
-        const resourcePosition = this.getStringByCoordinates(resource.position);
-        if (currentPosition === resourcePosition) {
-          return !(currentPosition === resourcePosition);
-        }
-      }
-    }
-    return true;
-  }
-
-  private getCoordinatesByString(coordinates: string): Position {
-    const [x, y] = coordinates.split(',').map(Number);
-    return { x, y };
-  }
-
-  private getStringByCoordinates(coordinates: Position): string {
-    return `${coordinates.x},${coordinates.y}`;
-  }
 
   private showAll(): void {
-    this.outputMessages.push(this.showTeamMembers('BLUE'));
-    this.outputMessages.push(this.showTeamMembers('RED'));
-    this.outputMessages.push(this.showResources());
-  }
-
-  private showTeamMembers(team: string): string {
-    let returnString = `${team}:`;
-    const teamMembers = this.units.filter(
-      (el) => el.team === team.toUpperCase()
-    );
-    if (teamMembers.length < 1) {
-      return `There are currently no units for team ${team} `;
-    }
-    for (const unit of teamMembers) {
-      returnString += ` ${unit.name} is at ${this.getStringByCoordinates(
-        unit.position
-      )};`;
-    }
-    return returnString;
-  }
-
-  private showResources(): string {
-    let returnString = `Resources: `;
-    if (this.resources.length < 1) {
-      return 'There are currently no resources ';
-    }
-
-    for (const resource of this.resources) {
-      let resourceInfo = resource.getResourceInfo();
-      returnString += `there is ${resourceInfo.quantity} ${
-        resourceInfo.type
-      } at position ${this.getStringByCoordinates(resource.position)}; `;
-    }
-    return returnString;
-  }
-
-  private showCoordinateInfo(coordinates: string): string {
-    let returnString = `On this position there is:`;
-    const coordinateObj = this.getCoordinatesByString(coordinates);
-    const unitsOnCurrentCoords = this.units.filter(
-      (el) =>
-        el.position.x === coordinateObj.x && el.position.y === coordinateObj.y
-    );
-    if (unitsOnCurrentCoords.length < 1) {
-      return 'There are no unit on this position';
-    }
-    for (const unit of unitsOnCurrentCoords) {
-      returnString += ` A ${unit.team} ${unit.type} named ${unit.name};`;
-    }
-    return returnString;
-  }
-
-  private getTeamResources(team: Team): string {
-    let message = `Team ${team} now has ${this.teamResourceCount[team].FOOD} food,
-     ${this.teamResourceCount[team].LUMBER} lumber and ${this.teamResourceCount[team].IRON} iron.`;
-    return message;
+    this.outputMessages.push(showTeamMembers(Team.BLUE, this.units));
+    this.outputMessages.push(showTeamMembers(Team.RED, this.units));
+    this.outputMessages.push(showResources(this.resources));
   }
 
   private calcPoints(): void {
@@ -337,24 +274,5 @@ export class AppComponent {
         this.teamPointsCount[team] += this.teamResourceCount[team][key] * 10;
       }
     }
-  }
-
-  private getWinner(): string {
-    let finalScore = 'The game is over.';
-    if (this.teamPointsCount[Team.BLUE] === this.teamPointsCount[Team.RED]) {
-      return 'ITS A DRAW';
-    } else {
-      const winner =
-        this.teamPointsCount[Team.BLUE] > this.teamPointsCount[Team.RED]
-          ? Team.BLUE
-          : Team.RED;
-      const looser =
-        this.teamPointsCount[Team.BLUE] < this.teamPointsCount[Team.RED]
-          ? Team.BLUE
-          : Team.RED;
-      finalScore += ` Team ${winner} is the winner with ${this.teamPointsCount[winner]} points,
-       and team ${looser} is the looser with ${this.teamPointsCount[looser]} points`;
-    }
-    return finalScore;
   }
 }
