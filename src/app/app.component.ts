@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, ResourceType, Team, UnitType } from 'src/models/models';
-import { areCoordinatesValid } from 'src/utils/game.utils';
+import { areCoordinatesValid, getCoordinatesByString, getStringByCoordinates, isPositionClear } from 'src/utils/game.utils';
 
 @Component({
   selector: 'app-root',
@@ -97,7 +97,7 @@ export class AppComponent {
       switch (objectType) {
         case 'unit':
           const name = commands[2];
-          const coordinates: Position = this.getCoordinatesByString(
+          const coordinates: Position = getCoordinatesByString(
             commands[3]
           );
           const team: Team = commands[4].toUpperCase() as Team;
@@ -128,7 +128,7 @@ export class AppComponent {
           this.outputMessages.push(
             `Created ${type} from ${team
               .toString()
-              .toLowerCase()} team named ${name} at position ${this.getStringByCoordinates(
+              .toLowerCase()} team named ${name} at position ${getStringByCoordinates(
               coordinates
             )}`
           );
@@ -147,14 +147,14 @@ export class AppComponent {
   private createResource(input: string[]) {
     const resourceName = <ResourceType>input[0].toUpperCase();
     const isLegitResource = resourceName in ResourceType;
-    const coordinates = this.getCoordinatesByString(input[1]);
+    const coordinates = getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
 
     if (quantity < 1) {
       const message = `Please provide valid quantity!`;
       this.outputMessages.push(message);
     } else {
-      if (!this.isPositionClear(this.resources, coordinates)) {
+      if (!isPositionClear(this.resources, coordinates)) {
         const message = `There is already a resource at this position, please try a different position.`;
         this.outputMessages.push(message);
       } else {
@@ -172,7 +172,7 @@ export class AppComponent {
   }
 
   private gatherResource(unit: Unit) {
-    const isThereResource = !this.isPositionClear(
+    const isThereResource = !isPositionClear(
       this.resources,
       unit.position
     );
@@ -213,7 +213,7 @@ export class AppComponent {
   }
 
   private go(coordinates: string, unit: Unit) {
-    const inputCoordinates = this.getCoordinatesByString(coordinates);
+    const inputCoordinates = getCoordinatesByString(coordinates);
     if (areCoordinatesValid(coordinates)) {
       this.outputMessages.push(`Please enter valid coordinates!`);
     } else {
@@ -231,30 +231,9 @@ export class AppComponent {
       }
     });
   }
-  private isPositionClear(
-    resources: Resource[],
-    coordinates: Position
-  ): boolean {
-    if (resources.length > 0) {
-      for (const resource of resources) {
-        const currentPosition = this.getStringByCoordinates(coordinates);
-        const resourcePosition = this.getStringByCoordinates(resource.position);
-        if (currentPosition === resourcePosition) {
-          return !(currentPosition === resourcePosition);
-        }
-      }
-    }
-    return true;
-  }
 
-  private getCoordinatesByString(coordinates: string): Position {
-    const [x, y] = coordinates.split(',').map(Number);
-    return { x, y };
-  }
 
-  private getStringByCoordinates(coordinates: Position): string {
-    return `${coordinates.x},${coordinates.y}`;
-  }
+
 
   private showAll(): string {
     let returnString = `${this.showTeamMembers('blue')} 
@@ -272,7 +251,7 @@ export class AppComponent {
       return `There are currently no units for team ${team} `;
     }
     for (const unit of teamMembers) {
-      returnString += ` ${unit.name} is at ${this.getStringByCoordinates(
+      returnString += ` ${unit.name} is at ${getStringByCoordinates(
         unit.position
       )};`;
     }
@@ -289,14 +268,14 @@ export class AppComponent {
       let resourceInfo = resource.getResourceInfo();
       returnString += `there is ${resourceInfo.quantity} ${
         resourceInfo.type
-      } at position ${this.getStringByCoordinates(resource.position)}; `;
+      } at position ${getStringByCoordinates(resource.position)}; `;
     }
     return returnString;
   }
 
   private showCoordinateInfo(coordinates: string): string {
     let returnString = `On this position there is`;
-    const coordinateObj = this.getCoordinatesByString(coordinates);
+    const coordinateObj = getCoordinatesByString(coordinates);
     const unitsOnCurrentCoords = this.units.filter(
       (el) =>
         el.position.x === coordinateObj.x && el.position.y === coordinateObj.y
