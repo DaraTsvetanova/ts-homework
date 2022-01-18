@@ -247,7 +247,7 @@ export class AppComponent {
     const coordinates = getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
 
-    if (quantity < 1) {
+    if (Number.isNaN(quantity) || quantity < 1) {
       const message = `Please provide valid quantity!`;
       this.outputMessages.push(message);
     } else {
