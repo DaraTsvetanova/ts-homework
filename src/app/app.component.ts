@@ -32,6 +32,10 @@ export class AppComponent {
       FOOD: 0,
     },
   };
+  public teamPointsCount: { [key: string]: number } = {
+    BLUE: 0,
+    RED: 0,
+  };
   @ViewChild('inputArea') inputArea: ElementRef;
 
   constructor() {}
@@ -54,6 +58,8 @@ export class AppComponent {
         this.show(commands);
         break;
       case 'end':
+        this.calcPoints();
+        this.outputMessages.push(this.getWinner());
         break;
       default:
         break;
@@ -83,8 +89,9 @@ export class AppComponent {
     }
   }
   private show(commands: string[]) {
+    const reg = /[0-9]+,[0-9]+/;
     if (commands[1] === 'all') {
-      this.outputMessages.push(this.showAll());
+      this.showAll();
     } else if (commands[1] === 'units') {
       this.outputMessages.push(this.showTeamMembers(commands[2]));
     } else if (commands[1] === 'resources') {
@@ -92,7 +99,7 @@ export class AppComponent {
     } else if (areCoordinatesValid(commands[1])) {
       this.outputMessages.push(this.showCoordinateInfo(commands[1]));
     } else {
-      this.outputMessages.push(`Please enter a valid command`);
+      this.outputMessages.push(`Please enter a valid command or coordinates`);
     }
   }
 
@@ -232,11 +239,10 @@ export class AppComponent {
     });
   }
 
-  private showAll(): string {
-    let returnString = `${this.showTeamMembers('blue')} 
-    ${this.showTeamMembers('red')}
-    ${this.showResources()}`;
-    return returnString;
+  private showAll(): void {
+    this.outputMessages.push(this.showTeamMembers('BLUE'));
+    this.outputMessages.push(this.showTeamMembers('RED'));
+    this.outputMessages.push(this.showResources());
   }
 
   private showTeamMembers(team: string): string {
@@ -281,8 +287,58 @@ export class AppComponent {
       return 'There are no unit on this position';
     }
     for (const unit of unitsOnCurrentCoords) {
-      returnString += ` a ${unit.type} named ${unit.name}`;
+      returnString += ` A ${unit.team} ${unit.type} named ${unit.name};`;
     }
     return returnString;
+  }
+
+  private getTeamResources(team: Team): string {
+    let message = `Team ${team} now has ${this.teamResourceCount[team].FOOD} food,
+     ${this.teamResourceCount[team].LUMBER} lumber and ${this.teamResourceCount[team].IRON} iron.`;
+    return message;
+  }
+
+  private calcPoints(): void {
+    for (const team of Object.keys(this.teamPointsCount)) {
+      const currentTeam = this.units.filter(
+        (el) => el.team === team.toUpperCase()
+      );
+
+      for (const unit of currentTeam) {
+        if (unit.type === UnitType.PEASANT) {
+          this.teamPointsCount[team] += 5;
+        } else if (unit.type === UnitType.GUARD) {
+          this.teamPointsCount[team] += 10;
+        } else if (
+          unit.type === UnitType.NINJA ||
+          unit.type === UnitType.GIANT
+        ) {
+          this.teamPointsCount[team] += 15;
+        }
+      }
+
+      for (const key in this.teamResourceCount[team]) {
+        this.teamPointsCount[team] += this.teamResourceCount[team][key] * 10;
+      }
+    }
+  }
+
+  private getWinner(): string {
+    let finalScore = 'The game is over.';
+    if (this.teamPointsCount[Team.BLUE] === this.teamPointsCount[Team.RED]) {
+      return 'ITS A DRAW';
+    } else {
+      const winner =
+        this.teamPointsCount[Team.BLUE] > this.teamPointsCount[Team.RED]
+          ? Team.BLUE
+          : Team.RED;
+      const looser =
+        this.teamPointsCount[Team.BLUE] < this.teamPointsCount[Team.RED]
+          ? Team.BLUE
+          : Team.RED;
+      finalScore += ` Team ${winner} is the winner with ${this.teamPointsCount[winner]} points,
+       and team ${looser} is the looser with ${this.teamPointsCount[looser]} points`;
+    }
+    return finalScore;
   }
 }
