@@ -101,7 +101,7 @@ export class AppComponent {
     const showCommand = commands[1].toUpperCase();
     if (showCommand === 'ALL') {
       this.showAll();
-    } else if (showCommand === 'UNTIS') {
+    } else if (showCommand === 'UNITS') {
       this.outputMessages.push(
         showTeamMembers(commands[2].toUpperCase(), this.units)
       );
