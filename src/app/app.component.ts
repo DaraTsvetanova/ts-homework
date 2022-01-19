@@ -44,9 +44,6 @@ export class AppComponent {
 
   executeCommand(): void {
     const commands = this.inputArea.nativeElement.value.split(' ');
-    console.log(this.resources);
-
-    console.log(commands);
 
     const command = commands[0].toUpperCase();
     switch (command) {
@@ -73,13 +70,15 @@ export class AppComponent {
 
   public orderUnit(commands: string[]): void {
     const unit = this.units.find(
-      (el) => el.name.toUpperCase() === commands[1].toUpperCase()
+      (unit) => unit.name.toUpperCase() === commands[1].toUpperCase()
     );
 
     if (unit) {
       switch (commands[2].toUpperCase()) {
         case 'ATTACK':
+          this.outputMessages.push('-----------------FIGHT-----------------');
           this.attack(unit);
+          this.outputMessages.push('-----------------FIGHT-----------------');
           break;
 
         case 'GATHER':
@@ -108,7 +107,9 @@ export class AppComponent {
     } else if (showCommand === 'RESOURCES') {
       this.outputMessages.push(showResources(this.resources));
     } else if (areCoordinatesValid(showCommand)) {
-      this.outputMessages.push(showCoordinateInfo(showCommand, this.units));
+      this.outputMessages.push(
+        showCoordinateInfo(showCommand, this.units, this.resources)
+      );
     } else {
       this.outputMessages.push(`Please enter a valid command or coordinates`);
     }
@@ -121,7 +122,7 @@ export class AppComponent {
         case 'UNIT':
           this.createUnit(commands);
           break;
-        case 'RESOURCES':
+        case 'RESOURCE':
           this.createResource(commands.slice(-3));
           break;
         default:
@@ -145,12 +146,12 @@ export class AppComponent {
       );
     });
 
-    const teammates = this.units.filter((el) => {
+    const teammates = this.units.filter((unit) => {
       return (
-        el.team === unit.team &&
-        getStringByCoordinates(el.position) ===
+        unit.team === unit.team &&
+        getStringByCoordinates(unit.position) ===
           getStringByCoordinates(unit.position) &&
-        el.name !== unit.name
+        unit.name !== unit.name
       );
     });
 
@@ -190,11 +191,20 @@ export class AppComponent {
         deadUnits.push(unit);
       }
       this.removeUnit();
+
       this.outputMessages.push(
         `There was a fierce battle between ${unit.name} from team ${unit.team} and ${enemyNames} from the enemy team.
         The defenders took totally ${damageDealtByAttacker} damage.
-        The attacker took ${damageDealtByDefender} damage. There are ${deadUnits.length} dead units after the fight was over`
+        The attacker took ${damageDealtByDefender} damage.`
       );
+      if (deadUnits.length > 0) {
+        const deadUnitNames = deadUnits.map((unit) => unit.name);
+        this.outputMessages.push(
+          `The unit(s) ${deadUnitNames.join(' ')} perished.`
+        );
+      } else {
+        this.outputMessages.push('There were no casualties.');
+      }
     }
   }
 
@@ -204,7 +214,7 @@ export class AppComponent {
     const team: Team = <Team>commands[4].toUpperCase();
     const unitType: UnitType = <UnitType>commands[5].toUpperCase();
 
-    if (this.units.find((el) => el.name === name)) {
+    if (this.units.find((unit) => unit.name === name)) {
       this.outputMessages.push('Unit with this name already exists!');
     } else if (!(team in Team)) {
       this.outputMessages.push(`Team ${team.toLowerCase()} does not exist!`);
@@ -333,7 +343,7 @@ export class AppComponent {
   private calcPoints(): void {
     for (const team of Object.keys(this.teamPointsCount)) {
       const currentTeam = this.units.filter(
-        (el) => el.team === team.toUpperCase()
+        (unit) => unit.team === team.toUpperCase()
       );
 
       let points: number = 0;
