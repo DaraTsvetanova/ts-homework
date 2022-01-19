@@ -50,18 +50,31 @@ export function getWinner(teamPointsCount: any): string {
   return finalScore;
 }
 
-export function showCoordinateInfo(coordinates: string, units: Unit[]): string {
-  let returnString = `At position ${coordinates} there is a `;
+export function showCoordinateInfo(
+  coordinates: string,
+  units: Unit[],
+  resources: Resource[]
+): string {
+  let returnString = `At position ${coordinates} there is:`;
   const coordinateObj = getCoordinatesByString(coordinates);
   const unitsOnCurrentCoords = units.filter(
-    (el) =>
-      el.position.x === coordinateObj.x && el.position.y === coordinateObj.y
+    (unit) =>
+      unit.position.x === coordinateObj.x && unit.position.y === coordinateObj.y
+  );
+  const resourcesOnCurrentCoords = resources.filter(
+    (resource) =>
+      resource.position.x === coordinateObj.x &&
+      resource.position.y === coordinateObj.y
   );
   if (unitsOnCurrentCoords.length < 1) {
     return 'There are no unit on this position';
   }
   for (const unit of unitsOnCurrentCoords) {
-    returnString += `${unit.team} ${unit.type} named ${unit.name}; `;
+    returnString += ` a ${unit.team} ${unit.type} named ${unit.name};`;
+  }
+  for (const resource of resourcesOnCurrentCoords) {
+    const resourceInfo = resource.getResourceInfo();
+    returnString += ` ${resourceInfo.quantity} ${resourceInfo.type};`;
   }
   return returnString;
 }
@@ -84,7 +97,7 @@ export function showResources(resources: Resource[]): string {
 export function showTeamMembers(team: string, units: Unit[]): string {
   if (team === Team.RED || team === Team.BLUE) {
     let returnString = `Currently the ${team} team has the following members:`;
-    const teamMembers = units.filter((el) => el.team === team);
+    const teamMembers = units.filter((unit) => unit.team === team);
     if (teamMembers.length < 1) {
       return `There are currently no units for team ${team} `;
     }
