@@ -57,23 +57,25 @@ export class AppComponent {
 
     console.log(commands);
 
-    const command = commands[0];
+    const command = commands[0].toUpperCase();
     switch (command) {
-      case 'create':
+      case 'CREATE':
         this.createObject(commands);
         break;
-      case 'order':
+      case 'ORDER':
         this.orderUnit(commands);
         break;
-      case 'show':
+      case 'SHOW':
         this.show(commands);
         break;
-      case 'end':
+      case 'END':
         this.calcPoints();
+        this.outputMessages.push('-----------------END-GAME-----------------');
         this.outputMessages.push(getWinner(this.teamPointsCount));
+        this.outputMessages.push('-----------------END-GAME-----------------');
         break;
       default:
-        this.outputMessages.push(`Unit does not exist!`);
+        this.outputMessages.push('Please enter a valid command');
         break;
     }
   }
@@ -84,18 +86,19 @@ export class AppComponent {
     );
 
     if (unit) {
-      switch (commands[2]) {
-        case 'attack':
+      switch (commands[2].toUpperCase()) {
+        case 'ATTACK':
           this.attack(unit);
           break;
 
-        case 'gather':
+        case 'GATHER':
           this.gatherResource(unit);
           break;
-        case 'go':
+        case 'GO':
           this.go(commands[3], unit);
           break;
         default:
+          this.outputMessages.push('Enter a valid order command');
           break;
       }
     } else {
@@ -104,24 +107,27 @@ export class AppComponent {
   }
 
   private show(commands: string[]): void {
-    if (commands[1] === 'all') {
+    const showCommand = commands[1].toUpperCase();
+    if (showCommand === 'ALL') {
       this.showAll();
-    } else if (commands[1] === 'units') {
-      this.outputMessages.push(showTeamMembers(commands[2], this.units));
-    } else if (commands[1] === 'resources') {
+    } else if (showCommand === 'UNTIS') {
+      this.outputMessages.push(
+        showTeamMembers(commands[2].toUpperCase(), this.units)
+      );
+    } else if (showCommand === 'RESOURCES') {
       this.outputMessages.push(showResources(this.resources));
-    } else if (areCoordinatesValid(commands[1])) {
-      this.outputMessages.push(showCoordinateInfo(commands[1], this.units));
+    } else if (areCoordinatesValid(showCommand)) {
+      this.outputMessages.push(showCoordinateInfo(showCommand, this.units));
     } else {
       this.outputMessages.push(`Please enter a valid command or coordinates`);
     }
   }
 
   private createObject(commands: string[]): void {
-    const objectType = commands[1].toLowerCase();
+    const objectType = commands[1].toUpperCase();
     if (areCoordinatesValid(commands[3])) {
       switch (objectType) {
-        case 'unit':
+        case 'UNIT':
           const name = commands[2];
           const coordinates: Position = getCoordinatesByString(commands[3]);
           const team: Team = commands[4].toUpperCase() as Team;
@@ -164,11 +170,11 @@ export class AppComponent {
             )}`
           );
           break;
-        case 'resource':
+        case 'RESOURCES':
           this.createResource(commands.slice(-3));
           break;
         default:
-          this.outputMessages.push('Please enter a valid command');
+          this.outputMessages.push('Please enter a valid creation command');
           break;
       }
     } else {
