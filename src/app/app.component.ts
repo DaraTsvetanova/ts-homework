@@ -13,14 +13,6 @@ import {
   showTeamMembers,
 } from 'src/utils/game.utils';
 
-function isUnitType(type: string): type is UnitType {
-  return Object.keys(UnitType).includes(type);
-}
-
-function isTeam(type: string): type is Team {
-  return Object.keys(Team).includes(type);
-}
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -30,7 +22,6 @@ export class AppComponent {
   public outputMessages: string[] = [];
   public units: Unit[] = [];
   public resources: Resource[] = [];
-  public names: string[] = [];
   public teamResourceCount: { [key: string]: any } = {
     BLUE: {
       LUMBER: 0,
@@ -57,22 +48,25 @@ export class AppComponent {
 
     console.log(commands);
 
-    const command = commands[0];
+    const command = commands[0].toUpperCase();
     switch (command) {
-      case 'create':
+      case 'CREATE':
         this.createObject(commands);
         break;
-      case 'order':
+      case 'ORDER':
         this.orderUnit(commands);
         break;
-      case 'show':
+      case 'SHOW':
         this.show(commands);
         break;
-      case 'end':
+      case 'END':
         this.calcPoints();
+        this.outputMessages.push('-----------------END-GAME-----------------');
         this.outputMessages.push(getWinner(this.teamPointsCount));
+        this.outputMessages.push('-----------------END-GAME-----------------');
         break;
       default:
+        this.outputMessages.push('Please enter a valid command');
         break;
     }
   }
@@ -83,18 +77,19 @@ export class AppComponent {
     );
 
     if (unit) {
-      switch (commands[2]) {
-        case 'attack':
+      switch (commands[2].toUpperCase()) {
+        case 'ATTACK':
           this.attack(unit);
           break;
 
-        case 'gather':
+        case 'GATHER':
           this.gatherResource(unit);
           break;
-        case 'go':
+        case 'GO':
           this.go(commands[3], unit);
           break;
         default:
+          this.outputMessages.push('Enter a valid order command');
           break;
       }
     } else {
@@ -103,77 +98,34 @@ export class AppComponent {
   }
 
   private show(commands: string[]): void {
-    if (commands[1] === 'all') {
+    const showCommand = commands[1].toUpperCase();
+    if (showCommand === 'ALL') {
       this.showAll();
-    } else if (commands[1] === 'units') {
-      this.outputMessages.push(showTeamMembers(commands[2], this.units));
-    } else if (commands[1] === 'resources') {
+    } else if (showCommand === 'UNITS') {
+      this.outputMessages.push(
+        showTeamMembers(commands[2].toUpperCase(), this.units)
+      );
+    } else if (showCommand === 'RESOURCES') {
       this.outputMessages.push(showResources(this.resources));
-    } else if (areCoordinatesValid(commands[1])) {
-      this.outputMessages.push(showCoordinateInfo(commands[1], this.units));
+    } else if (areCoordinatesValid(showCommand)) {
+      this.outputMessages.push(showCoordinateInfo(showCommand, this.units));
     } else {
       this.outputMessages.push(`Please enter a valid command or coordinates`);
     }
   }
 
   private createObject(commands: string[]): void {
-    const objectType = commands[1].toLowerCase();
+    const objectType = commands[1].toUpperCase();
     if (areCoordinatesValid(commands[3])) {
       switch (objectType) {
-        case 'unit':
-          const name = commands[2];
-          const coordinates: Position = getCoordinatesByString(commands[3]);
-
-          const teamType = commands[4].toUpperCase();
-
-          if (!isTeam(teamType)) {
-            break;
-          }
-
-          const team = Team[teamType];
-
-          const unitType = commands[5].toUpperCase();
-
-          if (!isUnitType(unitType)) {
-            break;
-          }
-
-          const type = UnitType[unitType];
-
-          if (this.names.includes(name)) {
-            this.outputMessages.push('Unit with this name already exists!');
-            break;
-          }
-
-          if (!Object.values(Team).includes(team)) {
-            this.outputMessages.push(
-              `Team ${team.toLowerCase()} does not exist!`
-            );
-            break;
-          }
-
-          if (!Object.values(UnitType).includes(type)) {
-            this.outputMessages.push(
-              `Unit type ${type.toLowerCase()} is not valid!`
-            );
-            break;
-          }
-
-          const unit = new Unit(coordinates, team, name, type);
-          this.units.push(unit);
-          this.names.push(name);
-          this.outputMessages.push(
-            `Created ${type} from ${team
-              .toString()
-              .toLowerCase()} team named ${name} at position ${getStringByCoordinates(
-              coordinates
-            )}`
-          );
+        case 'UNIT':
+          this.createUnit(commands);
           break;
-        case 'resource':
+        case 'RESOURCES':
           this.createResource(commands.slice(-3));
           break;
         default:
+          this.outputMessages.push('Please enter a valid creation command');
           break;
       }
     } else {
@@ -246,13 +198,40 @@ export class AppComponent {
     }
   }
 
+  private createUnit(commands: string[]): void {
+    const name = commands[2].toUpperCase();
+    const coordinates: Position = getCoordinatesByString(commands[3]);
+    const team: Team = <Team>commands[4].toUpperCase();
+    const unitType: UnitType = <UnitType>commands[5].toUpperCase();
+
+    if (this.units.find((el) => el.name === name)) {
+      this.outputMessages.push('Unit with this name already exists!');
+    } else if (!(team in Team)) {
+      this.outputMessages.push(`Team ${team.toLowerCase()} does not exist!`);
+    } else if (!(unitType in UnitType)) {
+      this.outputMessages.push(
+        `Unit type ${unitType.toLowerCase()} is not valid!`
+      );
+    } else {
+      const unit = new Unit(coordinates, team, name, unitType);
+      this.units.push(unit);
+      this.outputMessages.push(
+        `Created ${unitType} from ${team
+          .toString()
+          .toLowerCase()} team named ${name} at position ${getStringByCoordinates(
+          coordinates
+        )}`
+      );
+    }
+  }
+
   private createResource(input: string[]): void {
     const resourceName = <ResourceType>input[0].toUpperCase();
     const isLegitResource = resourceName in ResourceType;
     const coordinates = getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
 
-    if (quantity < 1) {
+    if (Number.isNaN(quantity) || quantity < 1) {
       const message = `Please provide valid quantity!`;
       this.outputMessages.push(message);
     } else {
@@ -317,8 +296,10 @@ export class AppComponent {
 
   private go(coordinates: string, unit: Unit): void {
     const inputCoordinates = getCoordinatesByString(coordinates);
-    if (areCoordinatesValid(coordinates)) {
+    if (!areCoordinatesValid(coordinates)) {
       this.outputMessages.push(`Please enter valid coordinates!`);
+    } else if (coordinates === getStringByCoordinates(unit.position)) {
+      this.outputMessages.push(`Can't move to the same position!`);
     } else {
       unit.modifyPosition(inputCoordinates);
       this.outputMessages.push(
@@ -355,22 +336,25 @@ export class AppComponent {
         (el) => el.team === team.toUpperCase()
       );
 
+      let points: number = 0;
+
       for (const unit of currentTeam) {
         if (unit.type === UnitType.PEASANT) {
-          this.teamPointsCount[team] += 5;
+          points += 5;
         } else if (unit.type === UnitType.GUARD) {
-          this.teamPointsCount[team] += 10;
+          points += 10;
         } else if (
           unit.type === UnitType.NINJA ||
           unit.type === UnitType.GIANT
         ) {
-          this.teamPointsCount[team] += 15;
+          points += 15;
         }
       }
 
       for (const key in this.teamResourceCount[team]) {
-        this.teamPointsCount[team] += this.teamResourceCount[team][key] * 10;
+        points += this.teamResourceCount[team][key] * 10;
       }
+      this.teamPointsCount[team] = points;
     }
   }
 }

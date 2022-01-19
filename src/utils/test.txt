@@ -1,0 +1,25 @@
+validation check if team is isLegit.
+create unit check name caps locked.
+print message if unit tries to move to the same place it currently is on.
+calc points refactor to erase current points.
+move create unit logic into createUnit method.
+add validation for create resources quantity.
+Create interface for teamResourceCount and teamPointsCount
+
+create unit Pesho 10,10 Blue Guard
+create unit Pesho 10,10 Blue Ninja
+create unit Pesho 10,10 Blue Peasant
+create unit Pesho 10,10 Blue Giant
+
+create resource lumber 10,10 100
+
+order Pesho go 10,10
+order Pesho gather
+order Pesho attack
+
+show all
+show units Blue
+show 10,10
+show resources
+
+end

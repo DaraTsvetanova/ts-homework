@@ -2,8 +2,8 @@ import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, Team } from 'src/models/models';
 
-export function areCoordinatesValid(coordinates: any) {
-  const reg = /^((?!-0)-?[0-9]+)+,((?!-0)-?[0-9]+)+$/;
+export function areCoordinatesValid(coordinates: any): boolean {
+  const reg = /^(?!-0)-?\d+,(?!-0)-?\d+$/;
   return reg.test(coordinates);
 }
 
@@ -34,7 +34,7 @@ export function getStringByCoordinates(coordinates: Position): string {
 export function getWinner(teamPointsCount: any): string {
   let finalScore = 'The game is over.';
   if (teamPointsCount[Team.BLUE] === teamPointsCount[Team.RED]) {
-    return 'ITS A DRAW';
+    return `IT'S A DRAW, both teams have ${teamPointsCount.BLUE} points`;
   } else {
     const winner =
       teamPointsCount[Team.BLUE] > teamPointsCount[Team.RED]
@@ -82,12 +82,11 @@ export function showResources(resources: Resource[]): string {
 }
 
 export function showTeamMembers(team: string, units: Unit[]): string {
-
-  if (team.toUpperCase() === 'RED' || team.toUpperCase() === 'BLUE') {
-    let returnString = `Currently the ${team.toUpperCase()} team has the following members:`;
-    const teamMembers = units.filter((el) => el.team === team.toUpperCase());
+  if (team === Team.RED || team === Team.BLUE) {
+    let returnString = `Currently the ${team} team has the following members:`;
+    const teamMembers = units.filter((el) => el.team === team);
     if (teamMembers.length < 1) {
-      return `There are currently no units for team ${team.toUpperCase()} `;
+      return `There are currently no units for team ${team} `;
     }
     for (const unit of teamMembers) {
       returnString += ` ${unit.name} is at ${getStringByCoordinates(
