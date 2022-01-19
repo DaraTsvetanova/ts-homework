@@ -198,10 +198,8 @@ export class AppComponent {
         The attacker took ${damageDealtByDefender} damage.`
       );
       if (deadUnits.length > 0) {
-        const deadUnitNames = deadUnits.map((unit) => unit.name);
-        this.outputMessages.push(
-          `The unit(s) ${deadUnitNames.join(' ')} perished.`
-        );
+        const deadUnitNames = deadUnits.map((unit) => unit.name).join(' ');
+        this.outputMessages.push(`The unit(s) ${deadUnitNames} perished.`);
       } else {
         this.outputMessages.push('There were no casualties.');
       }
