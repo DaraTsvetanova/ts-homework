@@ -13,14 +13,6 @@ import {
   showTeamMembers,
 } from 'src/utils/game.utils';
 
-function isUnitType(type: string): type is UnitType {
-  return Object.keys(UnitType).includes(type);
-}
-
-// function isResourceType(type: string): type is ResourceType {
-//   return Object.keys(ResourceType).includes(type)
-// }
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -30,7 +22,6 @@ export class AppComponent {
   public outputMessages: string[] = [];
   public units: Unit[] = [];
   public resources: Resource[] = [];
-  public names: string[] = [];
   public teamResourceCount: { [key: string]: any } = {
     BLUE: {
       LUMBER: 0,
@@ -128,47 +119,7 @@ export class AppComponent {
     if (areCoordinatesValid(commands[3])) {
       switch (objectType) {
         case 'UNIT':
-          const name = commands[2];
-          const coordinates: Position = getCoordinatesByString(commands[3]);
-          const team: Team = commands[4].toUpperCase() as Team;
-
-          const unitType = commands[5].toUpperCase();
-
-          if (!isUnitType(unitType)) {
-            break;
-          }
-
-          const type = UnitType[unitType];
-
-          if (this.names.includes(name)) {
-            this.outputMessages.push('Unit with this name already exists!');
-            break;
-          }
-
-          if (!Object.values(Team).includes(team)) {
-            this.outputMessages.push(
-              `Team ${team.toLowerCase()} does not exist!`
-            );
-            break;
-          }
-
-          if (!Object.values(UnitType).includes(type)) {
-            this.outputMessages.push(
-              `Unit type ${type.toLowerCase()} is not valid!`
-            );
-            break;
-          }
-
-          const unit = new Unit(coordinates, team, name, type);
-          this.units.push(unit);
-          this.names.push(name);
-          this.outputMessages.push(
-            `Created ${type} from ${team
-              .toString()
-              .toLowerCase()} team named ${name} at position ${getStringByCoordinates(
-              coordinates
-            )}`
-          );
+          this.createUnit(commands);
           break;
         case 'RESOURCES':
           this.createResource(commands.slice(-3));
@@ -243,6 +194,33 @@ export class AppComponent {
         `There was a fierce battle between ${unit.name} from team ${unit.team} and ${enemyNames} from the enemy team.
         The defenders took totally ${damageDealtByAttacker} damage.
         The attacker took ${damageDealtByDefender} damage. There are ${deadUnits.length} dead units after the fight was over`
+      );
+    }
+  }
+
+  private createUnit(commands: string[]): void {
+    const name = commands[2].toUpperCase();
+    const coordinates: Position = getCoordinatesByString(commands[3]);
+    const team: Team = <Team>commands[4].toUpperCase();
+    const unitType: UnitType = <UnitType>commands[5].toUpperCase();
+
+    if (this.units.find((el) => el.name === name)) {
+      this.outputMessages.push('Unit with this name already exists!');
+    } else if (!(team in Team)) {
+      this.outputMessages.push(`Team ${team.toLowerCase()} does not exist!`);
+    } else if (!(unitType in UnitType)) {
+      this.outputMessages.push(
+        `Unit type ${unitType.toLowerCase()} is not valid!`
+      );
+    } else {
+      const unit = new Unit(coordinates, team, name, unitType);
+      this.units.push(unit);
+      this.outputMessages.push(
+        `Created ${unitType} from ${team
+          .toString()
+          .toLowerCase()} team named ${name} at position ${getStringByCoordinates(
+          coordinates
+        )}`
       );
     }
   }
