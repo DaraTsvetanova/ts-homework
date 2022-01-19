@@ -298,6 +298,8 @@ export class AppComponent {
     const inputCoordinates = getCoordinatesByString(coordinates);
     if (!areCoordinatesValid(coordinates)) {
       this.outputMessages.push(`Please enter valid coordinates!`);
+    } else if (coordinates === getStringByCoordinates(unit.position)) {
+      this.outputMessages.push(`Can't move to the same position!`);
     } else {
       unit.modifyPosition(inputCoordinates);
       this.outputMessages.push(
