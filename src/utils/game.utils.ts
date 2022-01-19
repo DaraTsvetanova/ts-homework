@@ -34,7 +34,7 @@ export function getStringByCoordinates(coordinates: Position): string {
 export function getWinner(teamPointsCount: any): string {
   let finalScore = 'The game is over.';
   if (teamPointsCount[Team.BLUE] === teamPointsCount[Team.RED]) {
-    return 'ITS A DRAW';
+    return `IT'S A DRAW, both teams have ${teamPointsCount.BLUE} points`;
   } else {
     const winner =
       teamPointsCount[Team.BLUE] > teamPointsCount[Team.RED]

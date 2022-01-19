@@ -336,22 +336,25 @@ export class AppComponent {
         (el) => el.team === team.toUpperCase()
       );
 
+      let points: number = 0;
+
       for (const unit of currentTeam) {
         if (unit.type === UnitType.PEASANT) {
-          this.teamPointsCount[team] += 5;
+          points += 5;
         } else if (unit.type === UnitType.GUARD) {
-          this.teamPointsCount[team] += 10;
+          points += 10;
         } else if (
           unit.type === UnitType.NINJA ||
           unit.type === UnitType.GIANT
         ) {
-          this.teamPointsCount[team] += 15;
+          points += 15;
         }
       }
 
       for (const key in this.teamResourceCount[team]) {
-        this.teamPointsCount[team] += this.teamResourceCount[team][key] * 10;
+        points += this.teamResourceCount[team][key] * 10;
       }
+      this.teamPointsCount[team] = points;
     }
   }
 }
