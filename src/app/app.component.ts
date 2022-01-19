@@ -17,9 +17,9 @@ function isUnitType(type: string): type is UnitType {
   return Object.keys(UnitType).includes(type);
 }
 
-// function isResourceType(type: string): type is ResourceType {
-//   return Object.keys(ResourceType).includes(type)
-// }
+function isTeam(type: string): type is Team {
+  return Object.keys(Team).includes(type);
+}
 
 @Component({
   selector: 'app-root',
@@ -123,7 +123,14 @@ export class AppComponent {
         case 'unit':
           const name = commands[2];
           const coordinates: Position = getCoordinatesByString(commands[3]);
-          const team: Team = commands[4].toUpperCase() as Team;
+
+          const teamType = commands[4].toUpperCase();
+
+          if (!isTeam(teamType)) {
+            break;
+          }
+
+          const team = Team[teamType];
 
           const unitType = commands[5].toUpperCase();
 
