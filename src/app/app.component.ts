@@ -73,6 +73,7 @@ export class AppComponent {
         this.outputMessages.push(getWinner(this.teamPointsCount));
         break;
       default:
+        this.outputMessages.push(`Unit does not exist!`);
         break;
     }
   }
@@ -167,6 +168,7 @@ export class AppComponent {
           this.createResource(commands.slice(-3));
           break;
         default:
+          this.outputMessages.push('Please enter a valid command');
           break;
       }
     } else {
@@ -245,7 +247,7 @@ export class AppComponent {
     const coordinates = getCoordinatesByString(input[1]);
     const quantity = Number(input[2]);
 
-    if (quantity < 1) {
+    if (Number.isNaN(quantity) || quantity < 1) {
       const message = `Please provide valid quantity!`;
       this.outputMessages.push(message);
     } else {
@@ -310,7 +312,7 @@ export class AppComponent {
 
   private go(coordinates: string, unit: Unit): void {
     const inputCoordinates = getCoordinatesByString(coordinates);
-    if (areCoordinatesValid(coordinates)) {
+    if (!areCoordinatesValid(coordinates)) {
       this.outputMessages.push(`Please enter valid coordinates!`);
     } else {
       unit.modifyPosition(inputCoordinates);

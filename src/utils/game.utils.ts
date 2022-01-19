@@ -2,8 +2,8 @@ import { Resource } from 'src/classes/Resource';
 import { Unit } from 'src/classes/Unit';
 import { Position, Team } from 'src/models/models';
 
-export function areCoordinatesValid(coordinates: any) {
-  const reg = /^((?!-0)-?[0-9]+)+,((?!-0)-?[0-9]+)+$/;
+export function areCoordinatesValid(coordinates: any): boolean {
+  const reg = /^(?!-0)-?[0-9]+,(?!-0)-?[0-9]+$/;
   return reg.test(coordinates);
 }
 
@@ -82,7 +82,6 @@ export function showResources(resources: Resource[]): string {
 }
 
 export function showTeamMembers(team: string, units: Unit[]): string {
-
   if (team.toUpperCase() === 'RED' || team.toUpperCase() === 'BLUE') {
     let returnString = `Currently the ${team.toUpperCase()} team has the following members:`;
     const teamMembers = units.filter((el) => el.team === team.toUpperCase());
